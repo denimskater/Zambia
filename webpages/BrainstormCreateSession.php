@@ -1,13 +1,12 @@
 <?php
-    require ('BrainstormCommonCode.php');
-    require ('BrainstormRenderCreateSession.php');
+    require_once ('BrainstormCommonCode.php');
+    require_once ('BrainstormRenderCreateSession.php');
     global $email, $name, $badgeid, $session;
     get_name_and_email($name, $email);
     // error_log("badgeid: $badgeid; name: $name; email: $email"); // for debugging only
     $message_error="";
     $message_warn="";
     set_session_defaults();
-    $session["roomset"]=4; // "Unspecified"
     if (!(may_I('Participant')||may_I('Staff'))) { // must be brainstorm user
         $session["status"]=1; // brainstorm
         }

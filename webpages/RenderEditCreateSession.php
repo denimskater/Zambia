@@ -38,7 +38,7 @@ function RenderEditCreateSession ($action, $session, $message1, $message2) {
             <INPUT type="hidden" name="name" value="<?php echo htmlspecialchars($name,ENT_COMPAT);?>">
             <INPUT type="hidden" name="email" value="<?php echo htmlspecialchars($email,ENT_COMPAT);?>">
             <!-- The pubno field is no longer used on the form, but the code expects it.-->
-            <INPUT type="hidden" name="pubno" value="<?php echo htmlspecialchars($session["pubno"],ENT_COMPAT)."\">";?>
+            <INPUT type="hidden" name="pubno" value="<?php echo htmlspecialchars($session["pubno"],ENT_COMPAT); ?>">
             <DIV style="margin: 0.5em; padding: 0em"><TABLE style="margin: 0em; padding: 0em" ><COL width=600><COL>
               <TR style="margin: 0em; padding: 0em">
                 <TD style="margin: 0em; padding: 0em">&nbsp;</TD>
@@ -48,8 +48,9 @@ function RenderEditCreateSession ($action, $session, $message1, $message2) {
                     </TD></TR></TABLE>
                 </DIV>
             <DIV class="denseform">
-                <SPAN><LABEL for="sessionid">Session #: </LABEL><INPUT type="text" size=4 name="sessionid" readonly
-                     value="<?php echo htmlspecialchars($session["sessionid"],ENT_COMPAT);?>">&nbsp;&nbsp;</SPAN>
+                <SPAN><LABEL for="sessionid">Session #: </LABEL><A HREF=StaffAssignParticipants.php?selsess=<?php echo $session["sessionid"];?>>
+                      <?php echo $session["sessionid"];?></A>
+                      <INPUT type="hidden" name="sessionid" value="<?php echo $session["sessionid"];?>"></SPAN>
                 <SPAN><LABEL for="divisionid">Division: </LABEL><SELECT name="divisionid">
                      <?php populate_select_from_table("Divisions", $session["divisionid"], "SELECT", FALSE); ?>
                      </SELECT>&nbsp;&nbsp;</SPAN>
@@ -64,39 +65,44 @@ function RenderEditCreateSession ($action, $session, $message1, $message2) {
                     </SELECT></SPAN>
                 </DIV>
             <DIV class="denseform">
-                <SPAN><LABEL for="title">Title: </LABEL><INPUT type=text size="50" name="title" value="<?php
-                    echo htmlspecialchars($session["title"],ENT_COMPAT)."\">";
-                    ?>&nbsp;&nbsp;</SPAN>
+                <SPAN><LABEL for="title">Title: </LABEL><INPUT type=text size="50" name="title"
+                    value="<?php echo htmlspecialchars($session["title"],ENT_COMPAT); ?>">&nbsp;&nbsp;</SPAN>
                 <SPAN id="sinvguest"><LABEL for="invguest">Invited Guests Only? </LABEL>
                     <INPUT type="checkbox" value="invguest" id="invguest" <?php if ($session["invguest"]) {echo " checked ";} ?>
                     name="invguest">&nbsp;&nbsp;</SPAN>
                 <SPAN id="ssignup"><LABEL for="signup">Sign up Req.?</LABEL>
                     <INPUT type="checkbox" value="signup" id="signup" <?php if ($session["signup"]) {echo " checked ";} ?>
                     name="signup">&nbsp;&nbsp;</SPAN>
+                <?php if (strtoupper(MY_AVAIL_KIDS)=="FALSE") { ?>
+	        <SPAN><INPUT type="hidden" name="kids" value="<?php echo $session["kids"];?>"></SPAN>
+		<?php } else { ?>
                 <SPAN><LABEL for="kids">Kid ?:</LABEL>
                     <SELECT name="kids"><?php populate_select_from_table("KidsCategories", $session["kids"], "SELECT", FALSE); ?></SELECT>
                     </SPAN>
+		<?php } ?>
+                </DIV>
+            <DIV class="denseform">
+                <SPAN><LABEL for="secondtitle">Subtitle: </LABEL><INPUT type=text size="50" name="secondtitle" 
+                    value="<?php echo htmlspecialchars($session["secondtitle"],ENT_COMPAT) ?>">&nbsp;&nbsp;</SPAN>
                 </DIV>
 <?php
         if (strtoupper(BILINGUAL)=="TRUE") {
                 echo "            <DIV class=\"denseform\">\n";
-                echo "                 <SPAN><LABEL for=\"secondtitle\">".SECOND_TITLE_CAPTION.": </LABEL>";
-                echo "<INPUT type=text size=\"50\" name=\"secondtitle\" value=\"";
-                echo htmlspecialchars($session["secondtitle"],ENT_COMPAT)."\">&nbsp;&nbsp;</SPAN>\n";
+                echo "                 <SPAN><LABEL for=\"altlangtitle\">".ALT_LANG_TITLE_CAPTION.": </LABEL>";
+                echo "<INPUT type=text size=\"50\" name=\"altlangtitle\" value=\"";
+                echo htmlspecialchars($session["altlangtitle"],ENT_COMPAT)."\">&nbsp;&nbsp;</SPAN>\n";
                 echo "                 <SPAN><LABEL for=\"languagestatusid\">Session Language: </LABEL><SELECT name=\"languagestatusid\">";
                 populate_select_from_table("LanguageStatuses", $session["languagestatusid"], "SELECT", FALSE);
                 echo "</SELECT>\n                    </SPAN>\n";
                 echo "                </DIV>\n";
                 }
             else {
-                echo "            <INPUT type=\"hidden\" name=\"secondtitle\" value=\"";
-                echo htmlspecialchars($session["secondtitle"],ENT_COMPAT)."\">";
+	      //echo "            <INPUT type=\"hidden\" name=\"altlangtitle\" value=\"";
+	      //echo htmlspecialchars($session["altlangtitle"],ENT_COMPAT)."\">";
                 echo "            <INPUT type=\"hidden\" name=\"languagestatusid\" value=\"";
                 echo htmlspecialchars($session["languagestatusid"],ENT_COMPAT)."\">";
                 }
 ?>
-            <!-- The pocketprogtext field is no longer used on the form, but the code expects it.-->
-            <INPUT type="hidden" name="pocketprogtext" value="<?php echo htmlspecialchars($session["pocketprogtext"],ENT_COMPAT)."\">";?>
             <DIV class="denseform">
                 <SPAN><LABEL for="atten">Est. Atten.:</LABEL>
                     <INPUT type=text size="3" name="atten" value="<?php
@@ -115,23 +121,23 @@ function RenderEditCreateSession ($action, $session, $message1, $message2) {
         <DIV class="thinbox">
             <TABLE><COL width="100"><COL>
                 <TR>
-                    <TD class="txtalbl"><LABEL class="dense" for="progguiddesc">Description:</LABEL></TD>
+		    <TD class="txtalbl"><LABEL class="dense" for="progguiddesc">Web Description (<?php echo MIN_DESC_LEN."-".MAX_DESC_LEN ?>):</LABEL></TD>
                     <TD class="txta"><TEXTAREA class="textlabelarea" cols=70 name="progguiddesc" 
                             ><?php echo htmlspecialchars($session["progguiddesc"],ENT_NOQUOTES);?></TEXTAREA></TD>
+                    </TR>
+                <TR>
+                    <TD class="txtalbl"><LABEL class="dense" for="pocketprogtext">Program Book Description (<?php echo MIN_PROG_DESC_LEN."-".MAX_PROG_DESC_LEN ?>):</LABEL></TD>
+                    <TD class="txta"><TEXTAREA class="textlabelarea" cols=70 name="pocketprogtext" 
+                            ><?php echo htmlspecialchars($session["pocketprogtext"],ENT_NOQUOTES);?></TEXTAREA></TD>
                     </TR>
 <?php
         if (strtoupper(BILINGUAL)=="TRUE") {
                 echo "                <TR>\n";
-                echo "                    <TD class=\"txtalbl\"><LABEL class=\"dense\" for=\"pocketprogtext\">";
+                echo "                    <TD class=\"txtalbl\"><LABEL class=\"dense\" for=\"altlangprogguiddesc\">";
                 echo SECOND_DESCRIPTION_CAPTION.": </LABEL></TD>\n";
-                echo "                    <TD class=\"txta\"><TEXTAREA class=\"textlabelarea\" cols=70 name=\"pocketprogtext\">";
-                echo htmlspecialchars($session["pocketprogtext"],ENT_NOQUOTES)."</TEXTAREA></TD>\n";
+                echo "                    <TD class=\"txta\"><TEXTAREA class=\"textlabelarea\" cols=70 name=\"altlangprogguidedesc\">";
+                echo htmlspecialchars($session["altlangproggidedesc"],ENT_NOQUOTES)."</TEXTAREA></TD>\n";
                 echo "                    </TR>\n";
-                }
-            else {
-                echo "                <!-- The pocketprogtext field is no longer used on the form, but the code expects it.-->\n";
-                echo "                <INPUT type=\"hidden\" name=\"pocketprogtext\" value=\"";
-                echo htmlspecialchars($session["pocketprogtext"],ENT_COMPAT)."\">\n";
                 }
 ?>
                 <TR id="trprospartinfo">

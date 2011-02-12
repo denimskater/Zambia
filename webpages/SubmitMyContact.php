@@ -3,15 +3,13 @@
     require ('PartCommonCode.php'); // initialize db; check login;
     //                                  set $badgeid from session
     $interested = $_POST['interested'];
-    $share_email = $_POST['share_email'];
-    //print_r($share_email);
-    //echo "<BR>";
     $bestway = $_POST['bestway'];
     $password = $_POST['password'];
     $cpassword = $_POST['cpassword'];
     $pubsname = stripslashes($_POST['pubsname']);
     $pubsnameold = stripslashes($_POST['pubsnameold']);
     $bio = stripfancy(stripslashes($_POST['bio']));
+    $progbio = stripfancy(stripslashes($_POST['progbio']));
     if (strlen($pubsname)<3) {
         $message_error="Name for publications is too short.  Please edit.  Database not updated.";
         if (getCongoData($badgeid)==0) {
@@ -25,7 +23,9 @@
                 }
         }
     if (strlen($bio)>MAX_BIO_LEN) {
-        $message_error="Biography is too long: ".(strlen($bio))." characters.  Please edit.  Database not updated.";
+        $message_error="Web Biography is too long: ".(strlen($bio))." characters.  Please edit.  Database not updated.";
+    } elseif (strlen($progbio)>MAX_PROG_BIO_LEN) {
+        $message_error="Program Book Biography is too long: ".(strlen($progbio))." characters.  Please edit.  Database not updated.";
         if (getCongoData($badgeid)==0) {
                 require ('renderMyContact.php');
                 exit();
@@ -80,17 +80,12 @@
         $query=$query."pubsname=\"$x\", ";
         }
     $query.="bestway=\"$bestway\", ";
-    $query.="share_email=";
-    if ($share_email==='1' || $share_email==='0') {
-            $query.="$share_email, ";
-            }
-        else {
-            $query.="null, ";
-            }
     $query.="interested=\"$interested\" ";
     if (may_I('EditBio')) {
         $x=mysql_real_escape_string($bio,$link);
         $query.=", bio=\"$x\" ";
+        $y=mysql_real_escape_string($progbio,$link);
+        $query.=", progbio=\"$y\" ";
         }
     $query.="WHERE badgeid=\"".$badgeid."\"";                               //"
     if (!mysql_query($query,$link)) {

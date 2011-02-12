@@ -19,12 +19,7 @@ function conv_min2hrsmin($mininput) {
 // file db_name.php to configure
 //
 function stripfancy($input) {
-    if (stripfancy_from) {
-            return(strtr($input,stripfancy_from,stripfancy_to));
-            }
-        else {
-            return($input);
-            }
+    return(strtr($input,stripfancy_from,stripfancy_to));
     }
 //
 // Function get_nameemail_from_post($name, $email)
@@ -130,19 +125,19 @@ function set_session_defaults() {
     $session["featdest"]="";
     $session["servdest"]="";
     $session["pubchardest"]="";
-    if (DURATION_IN_MINUTES=="TRUE") {
-            $session["duration"]=" 60";
+    if (DURATION_IN_MINUTES=="TRUE") { // Migrate to db_name.php
+            $session["duration"]=" 90";
             }
         else {
-            $session["duration"]=" 1:00";
+            $session["duration"]=" 1:30";
             } 
     $session["atten"]="";
-    $session["kids"]=2; // "Kids Welcome"
+    $session["kids"]=1; // "Kids Not Allowed"
     $session["signup"]=false; // leave checkbox blank initially
-    $session["roomset"]=0; // prompt with "SELECT"
+    $session["roomset"]=""; // prompt with "SELECT"
     $session["notesforpart"]="";
     $session["servnotes"]="";
-    $session["status"]=2; // default to "Edit Me"
+    $session["status"]=1; // Brainstorm=1 Edit Me=6 Vetted=2 (should probably switch on Phases)
     $session["notesforprog"]="";
     $session["invguest"]=false; // leave checkbox blank initially
     }
@@ -229,7 +224,9 @@ function isStaff($badgeid) {
 // returns TRUE if user has this permission in the current phase(s)
 //
 function may_I($permatomtag) {
-    if ($_SESSION['permission_set']=="") return (false);
-    return (in_array($permatomtag,$_SESSION['permission_set']));
-    }    
+  if (isset($_SESSION['permission_set'])) {
+    $test=in_array($permatomtag,$_SESSION['permission_set']);
+    }
+    return ($test);
+  }    
 ?>

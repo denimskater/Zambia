@@ -186,26 +186,6 @@ TEXTAREA.readonly {
      color: #808080;
      }
 
-.emphasis {
-     font-weight: bold;
-     }
-
-.controlwithlabel {
-     display: inline-block;
-     margin: 1em;
-     vertical-align: top;
-     }
-
-.newlabel {
-     text-align: center;
-     display: block
-     }
-
-.control {
-     display: block;
-     text-align: center;
-     }
-
 #congo_section {
      display: table;
      padding: .5em;
@@ -424,11 +404,6 @@ LABEL.dense {
     font-weight: bold
     }
     
-.sched_hd {
-    font-weight: bold;
-    padding-bottom: 2px;
-    }
-        
 .vatop {
     vertical-align: top
     }
@@ -461,6 +436,36 @@ LABEL.dense {
     border-bottom: solid black 2px;
     border-left: none
     }
+.border0101 {
+    border-top: none;
+    border-right: solid black 1px;
+    border-bottom: none;
+    border-left: solid black 1px
+    }
+.border0101d {
+    border-top: dashed black 1px;
+    border-right: solid black 1px;
+    border-bottom: dashed black 1px;
+    border-left: solid black 1px
+    }
+.border1000 {
+    border-top: solid black 1px;
+    border-right: none;
+    border-bottom: none;
+    border-left: none
+    }
+.border1101 {
+    border-top: solid black 1px;
+    border-right: solid black 1px;
+    border-bottom: none;
+    border-left: solid black 1px
+    }
+.border1101d {
+    border-top: solid black 1px;
+    border-right: solid black 1px;
+    border-bottom: dashed black 1px;
+    border-left: solid black 1px
+    }
 .border1111 {
     border-top: solid black 1px;
     border-right: solid black 1px;
@@ -479,11 +484,17 @@ LABEL.dense {
     border-bottom: solid black 1px;
     border-left: solid black 1px
     }
-.border1221 {
+.border1211 {
     border-top: solid black 1px;
     border-right: solid black 2px;
-    border-bottom: solid black 2px;
+    border-bottom: solid black 1px;
     border-left: solid black 1px
+    }
+.border1212 {
+    border-top: solid black 1px;
+    border-right: solid black 2px;
+    border-bottom: solid black 1px;
+    border-left: solid black 2px
     }
 .border2111 {
     border-top: solid black 2px;
@@ -503,6 +514,12 @@ LABEL.dense {
     border-bottom: solid black 1px;
     border-left: solid black 1px
     }
+.border2212 {
+    border-top: solid black 2px;
+    border-right: solid black 2px;
+    border-bottom: solid black 1px;
+    border-left: solid black 2px
+    }
 .border2221 {
     border-top: solid black 2px;
     border-right: solid black 2px;
@@ -515,10 +532,13 @@ LABEL.dense {
     border-bottom: solid black 2px;
     border-left: solid black 2px
     }
+.border3333 {
+    border-top: solid black 2px;
+    border-right: solid black 2px;
+    border-bottom: solid black 2px;
+    border-left: solid black 2px
+    }
 
-.padding2000 {
-     padding-top: 2px;
-     }
 
 #update_section {
     display: table;
@@ -526,7 +546,11 @@ LABEL.dense {
 
 #bestway {
     display: table-row;
-    height: 30px;
+    top: 1em;
+    left: 0;
+    width: 27em;
+    margin: 3em;
+    /* border: solid #eeeeee 2px; */
     }
 
 #bwbuttons {
@@ -559,7 +583,6 @@ LABEL.dense {
 
 .divlistbox {
     display: table-row;
-    height: 45px;
     }
 
 .padbot0p5 {
@@ -568,7 +591,6 @@ LABEL.dense {
 
 .spanvalcb {
     display: table-cell;
-    padding-left: 5px;
     }
 
 .radiohead {
@@ -583,7 +605,6 @@ LABEL.dense {
 
 .password {
     display: table-row;
-    height: 35px;
     }
 
 .password .value {

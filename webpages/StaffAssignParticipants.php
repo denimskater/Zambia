@@ -61,19 +61,35 @@ if ($topsectiononly) {
     exit();
     }
 $query = <<<EOD
-SELECT title, progguiddesc, persppartinfo, notesforpart, notesforprog FROM Sessions
+SELECT title, pocketprogtext, progguiddesc, persppartinfo, notesforpart, notesforprog FROM Sessions
 WHERE sessionid=$selsessionid
 EOD;
 if (!$result=mysql_query($query,$link)) {
-    $message=$query."<BR>Error querying database. Unable to continue.<BR>";
-    echo "<P class\"errmsg\">".$message."\n";
+    $message=$query."Error querying database. Unable to continue.";
+    echo "<P class\"errmsg\">".$message."</P>\n";
     staff_footer();
     exit();
     }
-echo "<H2>$selsessionid - ".htmlspecialchars(mysql_result($result,0,"title"))."</H2>";    
-echo "<P>Program Guide Text\n";
+if (mysql_num_rows($result)==0) {
+    $message="Zero rows returned, this is either a removed class, or a not-yet-created one.  Please select another session above.";
+    echo "<P class\"errmsg\">".$message."</P>\n";
+    staff_footer();
+    exit();
+    }
+if (mysql_num_rows($result)!=1) {
+    $message=$query."returned unexpected number of rows (1 expected).";
+    echo "<P class\"errmsg\">".$message."</P>\n";
+    staff_footer();
+    exit();
+    }
+echo "<H2>$selsessionid - <A HREF=\"EditSession.php?id=".$selsessionid."\">".htmlspecialchars(mysql_result($result,0,"title"))."</A></H2>";    
+echo "<P>Web Program Text\n";
 echo "<P class=\"border1111 lrmargin lrpad\">";
 echo htmlspecialchars(mysql_result($result,0,"progguiddesc"));
+echo "\n";
+echo "<P>Program Book Text\n";
+echo "<P class=\"border1111 lrmargin lrpad\">";
+echo htmlspecialchars(mysql_result($result,0,"pocketprogtext"));
 echo "\n";
 echo "<P>Prospective Participant Info\n";
 echo "<P class=\"border1111 lrmargin lrpad\">";
@@ -90,27 +106,42 @@ echo "\n";
 echo "<HR>\n";
 $query = <<<EOD
 SELECT
-            POS.badgeid AS posbadgeid,
-            POS.moderator,
-            P.badgeid,
-            P.pubsname,
-            PSI.rank,
-            PSI.willmoderate,
-            PSI.comments
-    FROM
-            Participants AS P
-       JOIN
-(select distinct badgeid, sessionid from
-(select badgeid, sessionid from ParticipantOnSession where sessionid=$selsessionid
-    union
-select badgeid, sessionid from ParticipantSessionInterest where sessionid=$selsessionid) as R2) as R
-        using (badgeid)
-  LEFT JOIN ParticipantSessionInterest AS PSI
-        on R.badgeid = PSI.badgeid and R.sessionid = PSI.sessionid
-  LEFT JOIN ParticipantOnSession AS POS
-        on R.badgeid = POS.badgeid and R.sessionid = POS.sessionid
-    where
-        POS.sessionid=$selsessionid or POS.sessionid is null;
+    POS.badgeid AS posbadgeid,
+    POS.moderator,
+    POS.volunteer,
+    POS.introducer,
+    POS.aidedecamp,
+    P.badgeid,
+    P.pubsname,
+    PSI.rank,
+    PSI.willmoderate,
+    PSI.comments
+  FROM
+      Participants AS P
+      JOIN (SELECT
+                distinct badgeid,
+                sessionid
+              FROM
+                  (SELECT
+                       badgeid,
+                       sessionid
+                     FROM
+                         ParticipantOnSession
+                     WHERE
+                       sessionid=$selsessionid
+                   UNION
+                   SELECT
+                       badgeid,
+                       sessionid 
+                     FROM
+                         ParticipantSessionInterest
+                     WHERE
+                       sessionid=$selsessionid) as R2) as R using (badgeid)
+    LEFT JOIN ParticipantSessionInterest AS PSI on R.badgeid = PSI.badgeid and R.sessionid = PSI.sessionid
+    LEFT JOIN ParticipantOnSession AS POS on R.badgeid = POS.badgeid and R.sessionid = POS.sessionid
+  WHERE
+    POS.sessionid=$selsessionid OR
+    POS.sessionid is null;
 EOD;
 if (!$result=mysql_query($query,$link)) {
     $message=$query."<BR>Error querying database. Unable to continue.<BR>";
@@ -142,9 +173,17 @@ if (!$Presult=mysql_query($query,$link)) {
     }
 $i=0;
 $modid=0;
+$volid=0;
+$intid=0;
 while ($bigarray[$i] = mysql_fetch_array($result, MYSQL_ASSOC)) {
     if ($bigarray[$i]["moderator"]==1) {
         $modid=$bigarray[$i]["badgeid"];
+        }
+    if ($bigarray[$i]["volunteer"]==1) {
+        $volid=$bigarray[$i]["badgeid"];
+        }
+    if ($bigarray[$i]["introducer"]==1) {
+        $intid=$bigarray[$i]["badgeid"];
         }
     $i++;
     }
@@ -152,26 +191,46 @@ $numrows=$i;
 echo "<FORM name=\"selsesform\" method=POST action=\"StaffAssignParticipants.php\">\n";
 echo "<DIV class=\"SubmitDiv\"><BUTTON type=\"submit\" name=\"update\" class=\"SubmitButton\">Update</BUTTON></DIV>\n";
 echo "<INPUT type=\"radio\" name=\"moderator\" id=\"moderator\" value=\"0\"".(($modid==0)?"checked":"").">";
-echo "<LABEL for=\"moderator\">No Moderator Selected</LABEL>";
+echo "<LABEL for=\"moderator\">No Moderator Selected</LABEL><br>";
+echo "<INPUT type=\"radio\" name=\"volunteer\" id=\"volunteer\" value=\"0\"".(($volid==0)?"checked":"").">";
+echo "<LABEL for=\"volunteer\">No Volunteer Assigned</LABEL><br>";
+echo "<INPUT type=\"radio\" name=\"introducer\" id=\"introducer\" value=\"0\"".(($intid==0)?"checked":"").">";
+echo "<LABEL for=\"introducer\">No Introducer Assigned</LABEL>";
 echo "<TABLE>\n";
 for ($i=0;$i<$numrows;$i++) {
     echo "   <TR>\n";
-    echo "      <TD class=\"vatop\"><INPUT type=\"checkbox\" name=\"asgn".$bigarray[$i]["badgeid"]."\" ";
-    echo (($bigarray[$i]["posbadgeid"])?"checked":"")." value=\"1\"></TD>";
-    echo "      <TD class=\"vatop lrpad\">Assigned</TD>";
-    echo "<INPUT type=\"hidden\" name=\"row$i\" value=\"".$bigarray[$i]["badgeid"]."\">";
-    echo "<INPUT type=\"hidden\" name=\"wasasgn".$bigarray[$i]["badgeid"]."\" value=\"";
-    echo ((isset($bigarray[$i]["posbadgeid"]))?1:0)."\">";
-    echo "         </TD>\n";
+    echo "      <TD class=\"vatop\">\n";
+    echo "        <INPUT type=\"checkbox\" name=\"asgn".$bigarray[$i]["badgeid"]."\" ";
+    echo (($bigarray[$i]["posbadgeid"])?"checked":"")." value=\"1\">\n";
+    echo "        <LABEL for=\"asgn\">Assigned</LABEL></TD>\n";
+    echo "        <INPUT type=\"hidden\" name=\"row$i\" value=\"".$bigarray[$i]["badgeid"]."\">\n";
+    echo "        <INPUT type=\"hidden\" name=\"wasasgn".$bigarray[$i]["badgeid"]."\" value=\"";
+    echo ((isset($bigarray[$i]["posbadgeid"]))?1:0)."\">\n";
+    echo "      </TD>\n";
     echo "      <TD class=\"vatop\">".$bigarray[$i]["badgeid"]."</TD>\n";
     echo "      <TD class=\"vatop\">".$bigarray[$i]["pubsname"]."</TD>\n";
     echo "      <TD class=\"vatop\">Rank: ".$bigarray[$i]["rank"]."</TD>\n";
     echo "      <TD class=\"vatop\">".(($bigarray[$i]["willmoderate"]==1)?"Volunteered to moderate.":"")."</TD>\n";
     echo "      </TR>\n";
     echo "   <TR>\n";
-    echo "      <TD class=\"vatop\"><INPUT type=\"radio\" name=\"moderator\" id=\"moderator\"value=\"".$bigarray[$i]["badgeid"]."\" ";
-    echo (($bigarray[$i]["moderator"])?"checked":"")."></TD>";
-    echo "      <TD class=\"vatop lrpad\">Moderator</TD>";
+    echo "      <TD class=\"vatop\" vcenter>";
+    echo "        <INPUT type=\"radio\" name=\"moderator\" id=\"moderator\" value=\"".$bigarray[$i]["badgeid"]."\" ";
+    echo (($bigarray[$i]["moderator"])?"checked":"").">\n";
+    echo "        <LABEL for=\"moderator\">Moderator<br></LABEL>";
+    echo "        <INPUT type=\"radio\" name=\"volunteer\" id=\"volunteer\" value=\"".$bigarray[$i]["badgeid"]."\" ";
+    echo (($bigarray[$i]["volunteer"])?"checked":"").">\n";
+    echo "        <LABEL for=\"volunteer\">Volunteer<br></LABEL>";
+    echo "        <INPUT type=\"radio\" name=\"introducer\" id=\"introducer\" value=\"".$bigarray[$i]["badgeid"]."\" ";
+    echo (($bigarray[$i]["introducer"])?"checked":"").">\n";
+    echo "        <LABEL for=\"introducer\">Introducer<br></LABEL>";
+    echo "        <INPUT type=\"checkbox\" name=\"aidedecamp".$bigarray[$i]["badgeid"]."\" ";
+    echo "id=\"aidedecamp".$bigarray[$i]["badgeid"]."\" ".(($bigarray[$i]["aidedecamp"])?"checked":"")." value=\"1\">\n";
+    echo "        <LABEL for=\"aidedecamp\">Assisting<br></LABEL>";
+    echo "        <INPUT type=\"hidden\" name=\"wasaidedecamp".$bigarray[$i]["badgeid"]."\" value=\"";
+    echo (($bigarray[$i]["aidedecamp"])?1:0)."\">\n";
+    echo "        <INPUT type=\"checkbox\" name=\"unlist".$bigarray[$i]["badgeid"]."\" ";
+    echo "id=\"unlist".$bigarray[$i]["badgeid"]."\" value=\"1\">\n";
+    echo "        <LABEL for=\"unlist\">Not Interested</LABEL></TD>";
     echo "      <TD colspan=4 class=\"border1111 lrpad\">".htmlspecialchars($bigarray[$i]["comments"]);
     echo "</TD>\n";
     echo "      </TR>\n";
@@ -181,6 +240,8 @@ echo "</TABLE>";
 echo "<INPUT type=\"hidden\" name=\"selsess\" value=\"$selsessionid\">\n";
 echo "<INPUT type=\"hidden\" name=\"numrows\" value=\"$numrows\">\n";
 echo "<INPUT type=\"hidden\" name=\"wasmodid\" value=\"$modid\">\n";
+echo "<INPUT type=\"hidden\" name=\"wasvolid\" value=\"$volid\">\n";
+echo "<INPUT type=\"hidden\" name=\"wasintid\" value=\"$intid\">\n";
 echo "<DIV class=\"SubmitDiv\"><BUTTON type=\"submit\" name=\"update\" class=\"SubmitButton\">Update</BUTTON></DIV>\n";
 echo "<HR>\n";
 echo "<DIV><LABEL for=\"asgnpart\">Assign participant not indicated as interested or invited.</LABEL><BR>\n";

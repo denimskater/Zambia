@@ -1,46 +1,53 @@
 <?php
-  $title="GRIDS Reports";
-  require_once('db_functions.php');
-  require_once('StaffHeader.php');
-  require_once('StaffFooter.php');
-  require_once('StaffCommonCode.php');
-  staff_header($title);
-  $_SESSION['return_to_page']="REPORT_LINK";
+require_once('StaffCommonCode.php');
+global $link;
+$_SESSION['return_to_page']="genindex.php";
+$title="All Grids";
+$description="<P>All the grids are listed below, in the grid.</P>\n";
+$additionalinfo="<P>The type of grid is listed as the headers and the area of interest it pertains to is listed down the side.\n";
+$additionalinfo.="The choice of color or not is inside each grid element.</P>\n";
+$additionalinfo.="<P>Also useful is the <A HREF=StaffBios.php>Bios for Presenters</A> (<A HREF=Bios.php>public version</A>),\n";
+$additionalinfo.="the <A HREF=StaffDescriptions.php>Descriptions of scheduled Precis</A> (<A HREF=Descriptions.php>public version</A>),\n";
+$additionalinfo.="the <A HREF=StaffSchedule.php>Scheduled Precis</A> (<A HREF=Schedule.php>public version</A>) in time order,\n";
+$additionalinfo.="the <A HREF=StaffTracks.php>Tracks</A> (<A HREF=Tracks.php>public version</A>) by track name,\n";
+$additionalinfo.="and the <A HREF=Postgrid.php>public version</A> of the Grids.</P>\n";
+
+// Replacement for the query
+$how_array['Description']="";
+$how_array['Start Time']="starttime=y";
+$how_array['Start Time<br>Unabridged']="starttime=y&unpublished=y";
+$how_array['Start Time<br>Staff Only']="starttime=y&staffonly=y";
+$how_array['Time Filled']="timefilled=y";
+$how_array['Time Filled<br>Unabridged']="timefilled=y&unpublished=y";
+$how_array['Time Filled<br>Staff Only']="timefilled=y&staffonly=y";
+$how_array['Time Semi-filled']="standard=y";
+$how_array['Time Semi-filled<br>Unabridged']="unpublished=y";
+$how_array['Time Semi-filled<br>Staff Only']="staffonly=y";
+
+$type_array['Complete']="standard=y&";
+$type_array['Fast Track']="fasttrack=y&";
+$type_array['Event']="events=y&";
+$type_array['GoH']="goh=y&";
+$type_array['Programming']="programming=y&";
+
+//build the returned array
+$header_array=array_keys($how_array);
+$body_array=array_keys($type_array);
+$rows=0;
+foreach ($body_array as $y_element) {
+  $rows++;
+  foreach ($header_array as $x_element) {
+    if ($x_element == "Description") {
+      $grid_array[$rows]["$x_element"]="<B>".$y_element."</B>";
+    } else {
+      $grid_array[$rows]["$x_element"]="<A HREF=grid.php?".$type_array["$y_element"].$how_array["$x_element"].">Color</A> / \n";
+      $grid_array[$rows]["$x_element"].="<A HREF=grid.php?".$type_array["$y_element"].$how_array["$x_element"]."&nocolor=y>No Color</A>\n";
+    }
+  }
+}
+
+// Page Rendering
+topofpagereport($title,$description,$additionalinfo);
+echo renderhtmlreport(1,$rows,$header_array,$grid_array);
+correct_footer();
 ?>
-<DL>
-<DT> <a href="eventgridstaticreport.php">Published Event Grid</a></DT>
-  <DD>Display published event schedule with rooms on horizontal axis and
-  time on vertical. This excludes any item marked "Do Not Print" or
-  "Staff Only".</DD>
-
-<DT> <a href="eventgridfullstaticreport.php">Unabridged Event Grid</a></DT>
-  <DD>Display event schedule with rooms on horizontal axis and time on
-  vertical. This includes all items regardless of publication
-  status.</DD>
-
-<DT> <a href="programgridstaticreport.php">Published Programming Grid</a></DT>
-  <DD>Display published schedule of programming rooms with rooms on
-  horizontal axis and time on vertical. This excludes any item marked
-  "Do Not Print" or "Staff Only".</DD>
-
-<DT> <a href="fasttrackgridstaticreport.php">Published Fast Track Grid</a></DT>
-  <DD>Display published fast track schedule with rooms on horizontal
-  axis and time on vertical. This excludes any item marked "Do Not
-  Print" or "Staff Only".</DD>
-
-<DT> <a href="staffpubgridstaticreport.php">Published Grid</a></DT>
-  <DD>Display published schedule with rooms on horizontal axis and
-  time on vertical. This excludes any item marked "Do Not Print" or
-  "Staff Only".</DD>
-
-<DT> <a href="staffallgridstaticreport.php">Everything Grid</a></DT>
-  <DD>Display the entire schedule with rooms on horizontal axis and
-  time on vertical. This includes all items regardless of publication
-  status.</DD>
-
-<DT> <a href="staffonlygridstaticreport.php">Staff-Only Grid</a></DT>
-  <DD>Display the only the items that are Staff-Only or Do-Not-Publish
-  with rooms on horizontal axis and time on vertical. </DD>
-
-</DL>
-<?php staff_footer(); ?>
