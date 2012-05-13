@@ -10,12 +10,14 @@ function mysql_query_XML($query_array) {
 			return(FALSE);
 		$queryNode = $xml->createElement("query");
 		$queryNode = $doc->appendChild($queryNode);
-		$queryNode->setAttribute("queryName", mb_convert_encoding($queryName,"UTF-8","ISO-8859-1"));
+		$queryNode->setAttribute("queryName", $queryName);
 		while($row = mysql_fetch_assoc($result)) {
 			$rowNode = $xml->createElement("row");
 			$rowNode = $queryNode->appendChild($rowNode);
+			//print_r($row);
 			foreach ($row as $fieldname => $fieldvalue) {
-				$rowNode->setAttribute($fieldname, mb_convert_encoding($fieldvalue,"UTF-8","ISO-8859-1"));
+				if ($fieldvalue!="" && $fieldvalue!==null)
+					$rowNode->setAttribute($fieldname, $fieldvalue);
 				}
 			}
 
@@ -27,11 +29,30 @@ function mysql_query_with_error_handling($query) {
 	global $link, $message_error;
 	$result = mysql_query($query,$link);
 	if (!$result) {
-		$message_error=$query."<br/>".mysql_error($link)."<br/>";
+		$message_error .= $query."<br/>".mysql_error($link)."<br/>";
 		error_log($message_error);
 		}
 	return $result;
 	}
+	
+function rollback() { 
+	global $link, $message_error;
+    mysql_query_with_error_handling("ROLLBACK",$link);
+    }
+
+function populateCustomTextArray() {
+	global $customTextArray,$title;
+	//echo "<BR>Title:".$title.":<BR>\n";
+	if (isset($customTextArray))
+		array_splice($customTextArray,1); //should clear out $customTextArray
+	$query = "SELECT tag, textcontents FROM CustomText WHERE page = \"".$title."\";";
+	if (!$result=mysql_query_with_error_handling($query))
+		return(FALSE);
+	while($row = mysql_fetch_assoc($result)) {
+		$customTextArray[$row["tag"]] = $row["textcontents"];
+		}
+	return true;
+	}	
 
 // Function prepare_db()
 // Opens database channel
@@ -40,9 +61,14 @@ include ('db_name.php');
 function prepare_db() {
     global $link;
     $link = mysql_connect(DBHOSTNAME,DBUSERID,DBPASSWORD);
-    if ($link===false) return (false);
-    return (mysql_select_db(DBDB,$link));
+    if ($link===false)
+		return (false);
+	if (!mysql_select_db(DBDB,$link))
+		return (false);
+    return (mysql_set_charset("utf8",$link));
     }
+
+
 // The table SessionEditHistory has a timestamp column which is automatically set to the
 // current timestamp by MySQL. 
 function record_session_history($sessionid, $badgeid, $name, $email, $editcode, $statusid) {
@@ -555,7 +581,7 @@ function retrieve_participant_from_db($badgeid) {
 // global array $participant
 //
 function getCongoData($badgeid) {
-    global $message_error,$message2,$congoinfo,$link;
+    global $message_error,$message2,$congoinfo,$link,$participant;
     $query= <<<EOD
 SELECT
         badgeid,
@@ -619,12 +645,12 @@ EOD;
         $message_error=$query."<BR>\n returned $rows rows.";
         return (-2);
         }
-    $partAvailarray=mysql_fetch_array($result, MYSQL_NUM);
-    $partAvail["badgeid"]=$partAvailarray[0];
-    $partAvail["maxprog"]=$partAvailarray[1];
-    $partAvail["preventconflict"]=$partAvailarray[2];
-    $partAvail["otherconstraints"]=$partAvailarray[3];
-    $partAvail["numkidsfasttrack"]=$partAvailarray[4];
+    $partAvailarray=mysql_fetch_array($result, MYSQL_ASSOC);
+    $partAvail["badgeid"]=$partAvailarray["badgeid"];
+    $partAvail["maxprog"]=$partAvailarray["maxprog"];
+    $partAvail["preventconflict"]=$partAvailarray["preventconflict"];
+    $partAvail["otherconstraints"]=$partAvailarray["otherconstraints"];
+    $partAvail["numkidsfasttrack"]=$partAvailarray["numkidsfasttrack"];
 
     if (CON_NUM_DAYS>1) {
         $query="SELECT badgeid, day, maxprog FROM ParticipantAvailabilityDays where badgeid=\"$badgeid\"";
@@ -637,14 +663,17 @@ EOD;
             unset($partAvail["maxprogday$i"]);
             }
         if (mysql_num_rows($result)>0) {
-            while ($row=mysql_fetch_array($result, MYSQL_NUM)) {
-                $i=$row[1];
-                $partAvail["maxprogday$i"]=$row[2];
+            while ($row=mysql_fetch_array($result, MYSQL_ASSOC)) {
+                $i=$row["day"];
+                $partAvail["maxprogday$i"]=$row["maxprog"];
                 }
             }
         }
-    $query="SELECT badgeid, availabilitynum, starttime, endtime FROM ParticipantAvailabilityTimes ";
-    $query.="where badgeid=\"$badgeid\" order by starttime";
+    $query= <<<EOD
+SELECT badgeid, availabilitynum, DATE_FORMAT(starttime,'%T') AS starttime, 
+	DATE_FORMAT(endtime,'%T') AS endtime FROM ParticipantAvailabilityTimes
+	WHERE badgeid="$badgeid" ORDER BY starttime;
+EOD;
     $result=mysql_query($query,$link);
     if (!$result) {
         $message_error=$query."<BR>\n".mysql_error($link);
@@ -655,9 +684,9 @@ EOD;
         unset($partAvail["endtimestamp_$i"]);
         }
     $i=1;
-    while ($row=mysql_fetch_array($result, MYSQL_NUM)) {
-        $partAvail["starttimestamp_$i"]=$row[2];
-        $partAvail["endtimestamp_$i"]=$row[3];
+    while ($row=mysql_fetch_array($result, MYSQL_ASSOC)) {
+        $partAvail["starttimestamp_$i"]=$row["starttime"];
+        $partAvail["endtimestamp_$i"]=$row["endtime"];
         $i++;
         }
     return (0);
