@@ -4,9 +4,11 @@ require_once('db_functions.php');
 require_once('StaffHeader.php');
 require_once('StaffFooter.php');
 require_once('StaffCommonCode.php');
-//require_once('SubmitAdminParticipants.php');
-
+$fbadgeid = getInt("badgeid");
+//error_log("Reached AdminParticpants.");
 staff_header($title);
+if ($fbadgeid)
+	echo"<script type=\"text/javascript\">fbadgeid = $fbadgeid;</script>\n";
 ?>
 <div style="display:none" id="searchPartsDIV">
 	<div class="dialog">Enter all or part of first name, last name, badge name, <span style="font-weight:bold">or</span> published name.  If you enter numbers, it will be interpreted as a complete badgeid.
@@ -27,7 +29,7 @@ staff_header($title);
 </div>
 <div class="resultBox" id="resultBoxDIV"><span class="beforeResult" id="resultBoxSPAN">Result messages will appear here.</span></div>
 <div style="margin-left: 1em; margin-right: 1em">
-	<button class="ActionButton" type="button" id="openSearchPartsBUTN" onclick="openSearchPartsBUTN();">Search for participants</button>
+	<button type="button" id="openSearchPartsBUTN">Search for participants</button>
 </div>
 
 <div class="newformdiv">
@@ -74,6 +76,10 @@ staff_header($title);
 <div class="newformdiv">
 	<div class="newformlabel"><label for="staffnotes" class="newformlabel">Staff notes re. participant:</label></div>
 	<div class="newforminput"><textarea id="staffnotes" rows="4" cols="80" readonly="readonly" onchange="textChange('snotes');" onkeyup="textChange('snotes');"></textarea></div>
+	</div>
+<div class="newformdiv">
+	<div class="newformlabel"><span class="newformspan">Participant roles:</span></div>
+	<div class="newforminput"><div id="partRoles" class="divbox" style="height: 4em; width: 25em; overflow: auto"></div></div>
 	</div>
 <div style="margin-left: 1em; margin-right: 1em">
 	<button class="ActionButton" type="button" id="updateBUTN" onclick="updateBUTN();" disabled="disabled">Update</button>

@@ -1,4 +1,22 @@
 <?php
+function showCustomText($pre,$tag,$post) {
+	global $customTextArray;
+	if (strlen($x = $customTextArray[$tag])>0) {
+		echo $pre.$x.$post;
+		}
+	}
+	
+function appendCustomTextArrayToXML($xmlDoc) {
+	global $customTextArray;
+	$customTextNode = $xmlDoc->createElement("customText");
+	$docNode = $xmlDoc->getElementsByTagName("doc")->item(0);
+	$customTextNode = $docNode->appendChild($customTextNode);
+	foreach ($customTextArray as $tag => $customTextValue) {
+		$customTextNode->setAttribute($tag,$customTextValue);
+		}
+	return $xmlDoc;
+	}
+
 // Function conv_min2hrsmin()
 // Input is unchecked form input in minutes
 // Output is string in MySql time format
@@ -18,6 +36,24 @@ function conv_min2hrsmin($mininput) {
 // set constants stripfancy_from and stripfancy_to in
 // file db_name.php to configure
 //
+// Function getInt("name")
+// gets a parameter from $_GET[] or $_POST[] of name
+// and confirms it is an integer.
+function getInt($name) {
+	if (isset($_GET[$name])) {
+			$int = $_GET[$name];
+			}
+		else {
+			if (isset($_POST[$name])) {
+					$int = $_POST[$name];
+					}
+				else {
+					return false;
+					}
+			}
+	return(filter_var($int,FILTER_SANITIZE_NUMBER_INT));
+}
+
 function stripfancy($input) {
     if (stripfancy_from) {
             return(strtr($input,stripfancy_from,stripfancy_to));
@@ -45,7 +81,7 @@ function get_nameemail_from_post(&$name, &$email) {
 // the $partavail global variable with it.
 //
 // Notes on variables:
-// $_POST["availstarttime_$i"], $_POST["availendtime_$i"] are just 1-24 whole hours, 0 for unset; 1 is midnight start of day 
+// $_POST["availstarttime_$i"], $_POST["availendtime_$i"] are indexes into Times table, 0 for unset; 
 //
 function get_participant_availability_from_post() {
     global $partAvail;
@@ -134,7 +170,7 @@ function set_session_defaults() {
             $session["duration"]=" 60";
             }
         else {
-            $session["duration"]=" 1:00";
+            $session["duration"]=" 1:15";
             } 
     $session["atten"]="";
     $session["kids"]=2; // "Kids Welcome"
