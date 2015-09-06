@@ -100,5 +100,5 @@ load_javascript();
 		echo "</script>";
 ?>
 		</header>
-<?php } 
-} ?>
+<?php } ?>
+<?php } ?>
