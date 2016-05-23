@@ -221,4 +221,5 @@ function RenderEditCreateSession ($action, $session, $message1, $message2) {
         }
       ?>
       </FORM>
+    </DIV>
 <?php staff_footer(); } ?>

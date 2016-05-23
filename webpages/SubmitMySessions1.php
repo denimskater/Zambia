@@ -1,5 +1,4 @@
 <?php
-	// $Header$
     global $participant,$message_error,$message2,$congoinfo,$session_interests,$session_interest_index, $title;
     $title="Select Sessions";
     require ('PartCommonCode.php'); //define database functions
@@ -57,6 +56,5 @@
     get_si_session_info_from_db($session_interest_count); // Will render its own errors
     $message=$messageSave.$message;
     $message_error="";
-	$pageIsDirty = false;
-    render_session_interests($badgid,$session_interest_count,$message,$message_error, $pageIsDirty); // includes footer
+    render_session_interests($badgid,$session_interest_count,$message,$message_error); // includes footer
 ?>        

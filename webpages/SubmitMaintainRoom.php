@@ -192,8 +192,8 @@ EOD;
 						continue;
 					if (!$conflictThisAddition)
 						{ // Need header for this session
-						$message.="<div class=\"alert alert-info\">Session $sessionid: {$addSession['title']}\n";
-                        $message.="<ul>"; 
+						$message.="<div class=\"conflictEditConfirmation\">Session $sessionid: {$addSession['title']}</div>\n";
+                        $message.="<div class=\"conflictList\"><ul>"; 
 						}
 					$conflictThisAddition=true;
 					$message.="<li>".htmlspecialchars($addToScheduleParticipants[$badgeid],ENT_NOQUOTES)." ($badgeid) ";
@@ -240,8 +240,8 @@ EOD;
 					if (!$conflictThisAddition) 
 						{
 						// Need header for this session
-						$message.="<div class=\"alert alert-info\">Session $sessionid: {$addSession['title']}\n";
-                        $message.="<ul>"; 
+						$message.="<div class=\"conflictEditConfirmation\">Session $sessionid: {$addSession['title']}</div>\n";
+                        $message.="<div class=\"conflictList\"><ul>"; 
 						}
 					$conflictThisAddition=true;
 					$message.="<li>".htmlspecialchars($addToScheduleParticipants[$addBadgeid],ENT_NOQUOTES)." ($addBadgeid) ";
@@ -294,7 +294,7 @@ function SubmitMaintainRoom($ignore_conflicts) {
 	}
     if (!$ignore_conflicts) {
         if (!check_room_sched_conflicts($deleteScheduleIds,$addToScheduleArray)) {
-            echo "<P class=\"alert alert-warning\">Database not updated.  There were conflicts</P>\n";
+            echo "<P class=\"errmsg\">Database not updated.  There were conflicts</P>\n";
             echo $message;
             return false;
             }
@@ -348,7 +348,7 @@ EOD;
         $query="INSERT INTO Schedule SET sessionid=$sessionid, roomid=$selroomid, starttime=\"$time\"";
         if (!mysql_query($query,$link)) {
             $message=$query."<BR>Error updating database.<BR>";
-            echo "<P class=\"alert alert-error\">".$message."\n";
+            echo "<P class=\"errmsg\">".$message."\n";
             staff_footer();
             exit();
             }
@@ -357,7 +357,7 @@ EOD;
         $query="UPDATE Sessions SET statusid=$vs WHERE sessionid=$sessionid";
         if (!mysql_query($query,$link)) {
             $message=$query."<BR>Error updating database.<BR>";
-            echo "<P class=\"alert alert-error\">".$message."\n";
+            echo "<P class=\"errmsg\">".$message."\n";
             staff_footer();
             exit();
             }
@@ -370,16 +370,16 @@ EOD;
         $query.="($sessionid,\"$badgeid\",\"$name\",\"$email\",null,4,$vs,\"".time_description($time)." in $selroomid\")";
         if (!mysql_query($query,$link)) {
             $message=$query."<BR>Error updating database.<BR>";
-            echo "<P class=\"alert alert-error\">".$message."\n";
+            echo "<P class=\"errmsg\">".$message."\n";
             staff_footer();
             exit();
             }   
         }
     if ($completeRows) {
-        echo "<P class=\"alert alert-success\">$completeRows new schedule entr".($completeRows>1?"ies":"y")." written to database.\n";
+        echo "<P class=\"regmsg\">$completeRows new schedule entr".($completeRows>1?"ies":"y")." written to database.\n";
         }
     if ($incompleteRows) {
-        echo "<P class=\"alert alert-error\">$incompleteRows row".($incompleteRows>1?"s":"")." not entered due to incomplete data.\n";
+        echo "<P class=\"errmsg\">$incompleteRows row".($incompleteRows>1?"s":"")." not entered due to incomplete data.\n";
         }
     return (true);    
     }

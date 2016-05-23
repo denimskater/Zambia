@@ -1,10 +1,8 @@
 <?php
-// $Header$ -->
 function load_jquery() {
 ?>
-<!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script src="javascript/prefixfree.min.js" type="text/javascript"></script>-->
-<script src="jquery/jquery-1.7.2.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="javascript/prefixfree.min.js" type="text/javascript"></script>
 <script src="jquery/jquery-ui-1.8.16.custom.min.js"></script>
 <script src="javascript/bootstrap.js" type="text/javascript"></script>
 <script src="javascript/main.js"></script>
@@ -20,8 +18,6 @@ function load_javascript() {
 <script src="javascript/myProfile.js"></script>
 <script src="javascript/SearchMySessions1.js"></script>
 <script src="javascript/staffMaintainSchedule.js"></script>
-<script src="javascript/StaffAssignParticipants.js"></script>
-<script src="javascript/partPanelInterests.js"></script>
 <?php
 }
 ?>

@@ -56,9 +56,8 @@ function populateCustomTextArray() {
 
 // Function prepare_db()
 // Opens database channel
-if (!include ('../db_name.php'))
-	include ('./db_name.php'); // scripts which rely on this file (db_functions.php) may run from a different directory
-//date_define_timezone_set(TIMEZONE);
+include ('../db_name.php');
+
 function prepare_db() {
     global $link;
     $link = mysql_connect(DBHOSTNAME,DBUSERID,DBPASSWORD);

@@ -36,7 +36,6 @@
 <script type="text/javascript">
 	var thisPage="<?php echo $title; ?>";
 	var conStartDateTime = new Date("<?php echo CON_START_DATIM; ?>".replace(/-/g,"/"));
-	var alwaysShowLargeHeader = false;
 	var STANDARD_BLOCK_LENGTH = "<?php echo STANDARD_BLOCK_LENGTH; ?>";
 </script>
 <?php
@@ -85,7 +84,7 @@ load_javascript();
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</a>
-					<a class="brand" href="<?php echo $_SERVER['PATH_INFO'] ?>"><?php echo $title ?></a>
+					<a class="brand" href="<? echo $_SERVER['PATH_INFO'] ?>"><? echo $title ?></a>
 					<div class="nav-collapse">
 						<ul class="nav">
 							<li class="dropdown">
@@ -176,10 +175,7 @@ EOD;
  		}
 	else
 		{
-			require_once("loginForm.php");
-			echo "<script type=\"text/javascript\">";
-			echo "   var alwaysShowLargeHeader = true;";
-			echo "</script>";
+		require_once("loginForm.php");
 ?>
 		</header>
 <?php

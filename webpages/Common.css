@@ -1,4 +1,3 @@
-/* $Header: */
 /* . are classes */
 /* # are ids and must be unique in a page*/
 
@@ -794,13 +793,10 @@ TD#sessidtcell {
     font-size: 50%
     }
 
-.intCmnt {
+#intCmnt {
     height: 2.4em
     }
 
-.rankINP {
-	width: 2em !important;	
-	}
 
 .bb {
     display: block; 

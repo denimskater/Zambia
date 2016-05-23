@@ -8,7 +8,10 @@ function StaffMaintainSchedule() {
 	var schedScrollTop = "";
 	var elemToAdd = "";
 	var helperElem = "";
-	var dragParent = "";
+
+	this.addToSchedule1 = function addToSchedule1(pEvent, pUi, pThis) {
+		// dropped an unscheduled session onto an empty scheduling block
+	}
 
 	this.anyChange = function anyChange(element) {
 	}
@@ -38,15 +41,6 @@ function StaffMaintainSchedule() {
 		$("#noSessionsFoundMSG").hide();
 	}
 
-	this.dragStart = function(event, ui) {
-		dragParent = $(this).parent();
-		dragParent.droppable("option","disabled",true);
-		dropped = false;
-		dropTarget = "";
-		$(this).css("visibility", "hidden");
-		ui.helper.css("opacity","0.75");
-	}
-	
 	this.dropOnCompoundEmptySlot = function dropOnCompoundEmptySlot(pEvent, pUi, pThis) {
 		// always redraw table if dropping in compound area
 		var newSessionDiv = $(pThis).clone();
@@ -86,11 +80,9 @@ function StaffMaintainSchedule() {
 	}
 
 	this.dropOnEmptySlot = function dropOnEmptySlot(pEvent, pUi, pThis) {
-		$("#myhelper").hide();
 		var newSessionDiv = $(pThis).clone();
 		$(pThis).remove();
 		if (newSessionDiv.attr("durationUnits") !=3 || parseInt(dropTarget.attr("endtimeunits"),10) - parseInt(dropTarget.attr("starttimeunits"),10) != 3) {
-				// will refresh the whole grid, so only need to gather enough info to describe schedule change and send to server
 				if (newSessionDiv.hasClass("scheduledSessionBlock")) {
 						// was in schedule -- do reschedule		
 						staffMaintainSchedule.editScheduleAjax({
@@ -131,8 +123,6 @@ function StaffMaintainSchedule() {
 				var oldRoomId = newSessionDiv.attr("roomid");
 				var oldStartTime = newSessionDiv.attr("starttime");
 				var oldEndTime = newSessionDiv.attr("endtime");
-				var oldstarttimeunits = newSessionDiv.attr("starttimeunits");
-				var oldendtimeunits = newSessionDiv.attr("endtimeunits");
 				newSessionDiv.attr("roomid",dropTarget.attr("roomid"));
 				newSessionDiv.attr("starttimeunits",dropTarget.attr("starttimeunits"));
 				newSessionDiv.attr("starttime",staffMaintainSchedule.timeAttrFromUnits(dropTarget.attr("starttimeunits")));
@@ -146,60 +136,22 @@ function StaffMaintainSchedule() {
 					containment: "#mainContentContainer",
 					helper: 'clone',
 					appendTo: "#mainContentContainer",
-					start: staffMaintainSchedule.dragStart,
+					start: function(event, ui) {
+						dropped = false;
+						dropTarget = "";
+						$(this).css("visibility", "hidden");
+						ui.helper.css("border","1px solid black");
+						ui.helper.css("opacity","0.75");
+						},
 					stop: staffMaintainSchedule.dropSession,
-					scroll: true
+					scroll: false
 					});
 				dropTarget.html("");
 				dropTarget.prepend(newSessionDiv);
 				dropTarget.addClass("schedulerGridContainer");
 				dropTarget.removeClass("scheduleGridEmptyDIV");
-				dropTarget.removeAttr("style");
-				dropTarget.height(52);
-				dropTarget.droppable({
-					drop: function (event, ui) {
-						dropped=true;
-						dropTarget = $(this);
-						},
-					over: function() {
-						var helperSel = $("#myhelper");
-						var targetTDSel = $(this).parent();
-						helperSel.css("height",targetTDSel.height() - 4);
-						helperSel.css("width",targetTDSel.width() - 4);
-						helperSel.css("top",parseInt(targetTDSel.offset().top,10) + 1);
-						helperSel.css("left",parseInt(targetTDSel.offset().left,10) + 1);
-						helperSel.show();
-						},
-					out: function() {
-						$("#myhelper").hide();
-						},
-					tolerance: 'intersect'
-					});
-				//dropTarget.css("border","");
 				if (newSessionDiv.hasClass("scheduledSessionBlock")) {
-						// was in schedule -- do reschedule	and clean up source slot
-						if (dragParent.hasClass("schedulerGridContainer")) {
-							dragParent.removeAttr("style");
-							dragParent.height(49);
-							dragParent.removeClass("schedulerGridContainer").addClass("scheduleGridEmptyDIV");
-							dragParent.attr("roomid", oldRoomId).attr("starttimeunits", oldstarttimeunits).attr("endtimeunits", oldendtimeunits);
-							dragParent.droppable({
-								drop: function (event, ui) {
-									dropped=true;
-									dropTarget = $(this);
-									},
-								over: function () {
-									$(this).css("border-color","green");
-									},
-								out: function () {
-									$(this).css("border-color","white");
-									},
-								tolerance: 'intersect'
-								});
-							dragParent.droppable("option","disabled",false);
-							dragParent.removeAttr("aria-disabled");
-							dragParent = "";
-							}
+						// was in schedule -- do reschedule		
 						staffMaintainSchedule.editScheduleAjax({
 							returnTable: false,
 							editsArray: new Array({
@@ -232,7 +184,6 @@ function StaffMaintainSchedule() {
 									})
 								});
 						}	
-				dropTarget.removeAttr("roomid").removeAttr("starttimeunits").removeAttr("endtimeunits");
 				}
 	}
 
@@ -243,7 +194,7 @@ function StaffMaintainSchedule() {
 				// if item was anything other than 3 units long in simple box, redraw the schedule
 				var starttimeunits = $(pThis).attr("starttimeunits");
 				var endtimeunits = $(pThis).attr("endtimeunits");
-				if (dragParent.hasClass("schedulerGridContainer") && (endtimeunits - starttimeunits == 3))
+				if ($(pThis).parent().hasClass("schedulerGridContainer") && (endtimeunits - starttimeunits == 3))
 					returnTable = false;
 				var editsArray = [];
 				editsArray[0] = {
@@ -259,14 +210,14 @@ function StaffMaintainSchedule() {
 					};
 				if (!returnTable) {
 					// need to clean up everything myself
-					//var thisParent = $(pThis).parent();
-					dragParent.removeClass("schedulerGridContainer");
-					dragParent.addClass("scheduleGridEmptyDIV");
-					dragParent.attr("roomid",$(pThis).attr("roomid"));
-					dragParent.attr("starttimeunits",starttimeunits);
-					dragParent.attr("endtimeunits",endtimeunits);
-					dragParent.css("height","44px");
-					dragParent.droppable({
+					var thisParent = $(pThis).parent();
+					thisParent.removeClass("schedulerGridContainer");
+					thisParent.addClass("scheduleGridEmptyDIV");
+					thisParent.attr("roomid",$(pThis).attr("roomid"));
+					thisParent.attr("starttimeunits",starttimeunits);
+					thisParent.attr("endtimeunits",endtimeunits);
+					thisParent.css("height","44px");
+					thisParent.droppable({
 						drop: function (event, ui) {
 							dropped=true;
 							dropTarget = $(this);
@@ -279,7 +230,6 @@ function StaffMaintainSchedule() {
 							},
 						tolerance: 'intersect'
 						});
-					dragParent.droppable("option","disabled",false);
 					$(pThis).remove();
 					}
 				staffMaintainSchedule.editScheduleAjax({
@@ -368,7 +318,12 @@ function StaffMaintainSchedule() {
 									containment: "#mainContentContainer",
 									helper: 'clone',
 									appendTo: "#mainContentContainer",
-									start: staffMaintainSchedule.dragStart,
+									start: function(event, ui) {
+										dropped = false;
+										dropTarget = "";
+										$(this).css("visibility", "hidden");
+										ui.helper.css("opacity","0.75");
+										},
 									stop: staffMaintainSchedule.dropSession,
 									scroll: false
 									});
@@ -490,7 +445,7 @@ function StaffMaintainSchedule() {
     							top: destTop,
     							left: destLeft
   								},
-							750 /* ms */,
+							750,
 							function() {
 								$(this).remove();
 								elemToAdd.css("visibility","visible");
@@ -500,7 +455,12 @@ function StaffMaintainSchedule() {
 									containment: "#mainContentContainer",
 									helper: 'clone',
 									appendTo: "#mainContentContainer",
-									start: staffMaintainSchedule.dragStart,
+									start: function(event, ui) {
+										dropped = false;
+										dropTarget = "";
+										$(this).css("visibility", "hidden");
+										ui.helper.css("opacity","0.75");
+										},
 									stop: staffMaintainSchedule.dropSession,
 									scroll: false
 									});
@@ -515,7 +475,13 @@ function StaffMaintainSchedule() {
 									containment: "#mainContentContainer",
 									helper: 'clone',
 									appendTo: "#mainContentContainer",
-									start: staffMaintainSchedule.dragStart,
+									start: function(event, ui) {
+										dropped = false;
+										dropTarget = "";
+										$(this).css("visibility", "hidden");
+										ui.helper.css("border","1px solid black");
+										ui.helper.css("opacity","0.75");
+										},
 									stop: staffMaintainSchedule.dropSession,
 									scroll: false
 									});
@@ -614,7 +580,12 @@ function StaffMaintainSchedule() {
 			containment: "#mainContentContainer",
 			helper: 'clone',
 			appendTo: "#mainContentContainer",
-			start: staffMaintainSchedule.dragStart,
+			start: function(event, ui) {
+				dropped = false;
+				dropTarget = "";
+				$(this).css("visibility", "hidden");
+				ui.helper.css("opacity","0.75");
+				},
 			stop: staffMaintainSchedule.dropSession,
 			scroll: false
 			});
@@ -627,7 +598,7 @@ function StaffMaintainSchedule() {
 
 	this.dropSession = function dropSession(event, ui) {
 		confirmationMsg = "";
-		if (dropped==true) {
+		if(dropped==true) {
 				if (dropTarget.attr("id") == "fileCabinetIMG")
 						staffMaintainSchedule.dropOnFileCab(event, ui, this);
 					else if (dropTarget.attr("id") == "sessionsToBeSchedContainer")
@@ -645,9 +616,7 @@ function StaffMaintainSchedule() {
 				$(this).css("visibility", "visible");
 		dropped = false;
 		dropTarget = "";
-		if (dragParent)
-			dragParent.droppable("option", "disabled", false);
-		dragParent = "";
+		$(this).parent().droppable("option","disabled",false);
 	}
 
 	this.durationFromSTAET = function durationFromSTAET(startTime,endTime) {
@@ -950,7 +919,7 @@ function StaffMaintainSchedule() {
 			out: function() {
 				$("#myhelper").hide();
 				},
-			tolerance: 'intersect'
+			tolerance: 'intersect'	
 			});
 		/// editing this chunk
 		$("#scheduleGridContainer").find(".scheduledSessionBlock").draggable({
@@ -959,9 +928,16 @@ function StaffMaintainSchedule() {
 			containment: "#mainContentContainer",
 			helper: 'clone',
 			appendTo: "#mainContentContainer",
-			start: staffMaintainSchedule.dragStart,
+			start: function(event, ui) {
+				$(this).parent().droppable("option","disabled",true);
+				dropped = false;
+				dropTarget = "";
+				$(this).css("visibility", "hidden");
+				ui.helper.css("border","1px solid black");
+				ui.helper.css("opacity","0.75");
+				},
 			stop: staffMaintainSchedule.dropSession,
-			scroll: true
+			scroll: false
 			});
 		/// editing this chunk
 		var foo;
@@ -1018,9 +994,14 @@ function StaffMaintainSchedule() {
 			containment: "#mainContentContainer",
 			helper: 'clone',
 			appendTo: "#mainContentContainer",
-			start: staffMaintainSchedule.dragStart,
+			start: function(event, ui) {
+				dropped = false;
+				dropTarget = "";
+				$(this).css("visibility", "hidden");
+				ui.helper.css("opacity","0.75");
+				},
 			stop: staffMaintainSchedule.dropSession,
-			scroll: true
+			scroll: false
 			});
 		sessionMasterArray = [];
 		$("#sessionsToBeScheduled").find("[id^='sessionBlockDIV_']").each(function() {
