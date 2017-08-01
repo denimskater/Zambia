@@ -1,15 +1,15 @@
 <?php
-	// $Header$
-	global $participant,$message_error,$message2,$congoinfo;
+//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+	global $participant, $message_error, $message2, $congoinfo;
 	$title="Reports in Category";
 	require_once('db_functions.php');
 	require_once('StaffHeader.php');
 	require_once('StaffFooter.php');
 	require_once('StaffCommonCode.php');
 	$reportcategoryid = getInt("reportcategoryid");
-	if ($reportcategoryid===false) {
+	if ($reportcategoryid === false) {
 		$message_error = "Required parameter reportcategoryid misssing or invalid.";
-		RenderError($title,$message_error);
+		RenderError($title, $message_error);
         exit();
 		}
 	if ($reportcategoryid == 0) {
@@ -26,10 +26,10 @@ EOD;
 		else {
 			// actual $reportcategoryid
 			$query = "SELECT description from ReportCategories where reportcategoryid = $reportcategoryid;";
-			$result = mysql_query_with_error_handling($query);
-			if ($result===false || mysql_num_rows($result) != 1) {
+			$result = mysql_query_with_error_handling($query, true);
+			if (mysql_num_rows($result) != 1) {
 				$message_error = "reportcategoryid $reportcategoryid not found in db.";
-				RenderError($title,$message_error);
+				RenderError($title, $message_error);
 				exit();
 				}
 			$title = mysql_result($result,0);

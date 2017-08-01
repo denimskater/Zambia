@@ -1,4 +1,5 @@
 <?php
+//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
 require_once('db_functions.php');
 require_once('StaffCommonCode.php');
 
@@ -59,7 +60,6 @@ function update_participant() {
 	$query = mb_substr($query,0,-2); //drop two characters at end: ", "
     $query.=" WHERE badgeid=\"$partid\"";
     if (!mysql_query_with_error_handling($query)) {
-        echo "<p class=\"alert alert-error\">".$message_error."</p>";
         return;
         }
     $message="<p class=\"alert alert-success\">Database updated successfully.</p>";
@@ -72,7 +72,6 @@ UPDATE ParticipantOnSessionHistory
 		AND inactivatedts IS NULL;
 EOD;
 	    if (!mysql_query_with_error_handling($query)) {
-	        echo "<p class=\"alert alert-error\">".$message_error."</p>";
 	        return;
 	        }
         $message.="<p class=\"alert alert-info\">Participant removed from ".mysql_affected_rows($link)." session(s).</p>";

@@ -1,5 +1,7 @@
-<?php 
+<?php
+//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
 require_once('db_functions.php');
+require_once('Constants.php');
 require_once('ParticipantHeader.php');
 require_once('ParticipantFooter.php');
 

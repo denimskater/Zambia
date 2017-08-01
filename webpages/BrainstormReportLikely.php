@@ -1,4 +1,5 @@
 <?php
+//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
     require_once ('db_functions.php');
     require_once('BrainstormCommonCode.php');
     $title="Likely to Occur Suggestions";
@@ -37,12 +38,8 @@ SELECT
             SS.statusname IN ('Vetted','Assigned','Scheduled')
         AND S.invitedguest=0;
 EOD;
-    if (!$result = mysql_query_with_error_handling($query,$link)) {
-        $message="Error retrieving data from database." . $message_error;
-        RenderError($title,$message);
-        exit ();
-        }
     brainstorm_header($title);
+    $result = mysql_query_with_error_handling($query, true);
     echo "<p> These ideas have made the first cut.  We like them and would like to see them happen.   Now to just find all the right people... ";
     echo "<p> If you want to help, email us at "; 
     echo "<a href=\"mailto:".PROGRAM_EMAIL."\">".PROGRAM_EMAIL."</a> </p>\n";

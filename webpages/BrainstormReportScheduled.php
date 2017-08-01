@@ -1,4 +1,5 @@
 <?php
+//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
     require_once ('db_functions.php');
     require_once('BrainstormCommonCode.php');
     $title="Scheduled Suggestions";
@@ -37,17 +38,13 @@ SELECT
             SS.statusname IN ('Assigned','Scheduled')
         AND S.invitedguest=0;
 EOD;
-    if (!$result = mysql_query_with_error_handling($query,$link)) {
-        $message="Error retrieving data from database." . $message_error;
-        RenderError($title,$message);
-        exit ();
-        }
     brainstorm_header($title);
+    $result = mysql_query_with_error_handling($query, true);
     echo "<p> These ideas are highly likely to make it into the final schedule. Things are looking good for them.  Please remember events out of our control and last minute emergencies cause this to change!  No promises, but we are doing our best to have this happen. ";
     echo "<p> If you want to help, email us at "; 
     echo "<a href=\"mailto:".PROGRAM_EMAIL."\">".PROGRAM_EMAIL."</a> </p>\n";
     echo "This list is sorted by Track and then Title." ;
-    RenderPrecis($result,$showlinks);
+    RenderPrecis($result, $showlinks);
     brainstorm_footer();
     exit();
 ?> 

@@ -1,7 +1,5 @@
 <?php
-	// SubmitMyContact.php
-	// Created by Peter Olszowka on ?; Updated 2015-08-29
-	// Copyright (c) 2008-2015 Peter Olszowka. All rights reserved.
+//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
 	$title="My Profile";
     require ('PartCommonCode.php'); // initialize db; check login;
     //                                  set $badgeid from session
@@ -101,22 +99,13 @@
 		exit();		
 		}
 	if ($updateClause) {
-		if (!mysql_query_with_error_handling($query.mb_substr($updateClause,0,-2).$query_end)) {
-			RenderErrorAjax($message_error);
-			exit();
-			}
+		mysql_query_with_error_handling($query.mb_substr($updateClause,0,-2).$query_end, true, true);
 		}
 	if ($valuesClause2) {
-		if (!mysql_query_with_error_handling($query2.$valuesClause2)) {
-			RenderErrorAjax($message_error);
-			exit();
-			}
+		mysql_query_with_error_handling($query2.$valuesClause2, true, true);
 		}
 	if ($credentialClause3) {
-		if (!mysql_query_with_error_handling($query3.$credentialClause3.")")) {
-			RenderErrorAjax($message_error);
-			exit();
-			}
+		mysql_query_with_error_handling($query3.$credentialClause3.")", true, true);
 		}
 	echo ("<span class=\"alert alert-success\">");
 	if ($password) {

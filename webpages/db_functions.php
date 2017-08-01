@@ -2,70 +2,151 @@
 //	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
 
 function mysql_query_XML($query_array) {
-	global $link, $message_error;
+	global $linki, $message_error;
 	$xml = new DomDocument("1.0", "UTF-8");
-	$doc = $xml->createElement("doc");
-	$doc = $xml->appendChild($doc);
-	foreach ($query_array as $queryName => $query) {
-		if (!$result=mysql_query_with_error_handling($query))
-			return(FALSE);
-		if ($result !== TRUE) {
-			$queryNode = $xml->createElement("query");
-			$queryNode = $doc->appendChild($queryNode);
-			$queryNode->setAttribute("queryName", $queryName);
-			while($row = mysql_fetch_assoc($result)) {
-				$rowNode = $xml->createElement("row");
-				$rowNode = $queryNode->appendChild($rowNode);
-				//print_r($row);
-				foreach ($row as $fieldname => $fieldvalue) {
-					if ($fieldvalue!="" && $fieldvalue!==null)
-						$rowNode->setAttribute($fieldname, $fieldvalue);
-					}
-				}
-			}
-		}
+	$doc = $xml -> createElement("doc");
+	$doc = $xml -> appendChild($doc);
+	$multiQueryStr = "";
+    foreach ($query_array as $query) {
+        $query = trim($query);
+        $multiQueryStr .= $query;
+        if (substr($query, -1, 1) !== ";") {
+            $multiQueryStr .= ";";
+        }
+    }
+    $status = mysqli_multi_query($linki, $multiQueryStr);
+    //error_log("1: $status");
+    $queryNo = 0;
+    $queryNameArr = array_keys($query_array);
+    do {
+        if ($queryNo !== 0) {
+            $status = mysqli_next_result($linki);
+        }
+        if (!$status) {
+            $message_error = $multiQueryStr . "<br />";
+            $message_error .= "Error with query number " . ($queryNo + 1) . " <br />";
+            $message_error .= mysqli_error($linki) . "<br />";
+            //error_log("2: errored out of mysql_query_XML");
+            return(FALSE);
+        }
+        $result = mysqli_store_result($linki);
+        $queryNode = $xml -> createElement("query");
+        $queryNode = $doc -> appendChild($queryNode);
+        $queryNode->setAttribute("queryName", $queryNameArr[$queryNo]);
+        while($row = mysqli_fetch_assoc($result)) {
+            $rowNode = $xml -> createElement("row");
+            $rowNode = $queryNode -> appendChild($rowNode);
+            //error_log("3: \$row: ".print_r($row, true));
+            foreach ($row as $fieldname => $fieldvalue) {
+                if ($fieldvalue !== "" && $fieldvalue !== null) {
+                    $rowNode -> setAttribute($fieldname, $fieldvalue);
+                }
+            }
+        }
+        mysqli_free_result($result);
+        $queryNo++;
+        //error_log("4: increment \$queryNo to $queryNo");
+    } while (mysqli_more_results($linki));
 	return ($xml);
-	}
+}
+
+function log_query_error($query, $error_message, $ajax) {
+    error_log("mysql query error");
+    error_log($query);
+    error_log($error_message);
+    if ($ajax) {
+        echo "<span class=\"alert\">";
+        echo "Error updating or querying database. ";
+        echo $query . " ";
+        echo $error_message;
+        echo "</span>";
+    } else {
+        echo "<p class=\"alert alert - error\">";
+        echo "Error updating or querying database.<br>\n";
+        echo $query . "<br>\n";
+        echo $error_message;
+        echo "</p>\n";
+    }
+}
 
 function mysql_query_exit_on_error($query) {
+	return mysql_query_with_error_handling($query, true);
+}
+
+function mysqli_query_exit_on_error($query) {
+    return mysqli_query_with_error_handling($query, true);
+}
+
+function mysql_query_with_error_handling($query, $exit_on_error = false, $ajax = false) {
 	global $link, $message_error;
-	$result = mysql_query_with_error_handling($query);
+	$result = mysql_query($query, $link);
 	if (!$result) {
-		echo "<p class=\"alert alert-error\">Error querying or updating database.<br />$message_error\n</p>";
-		staff_footer();
-		exit();
-		}
+        log_query_error($query, mysql_error($link), $ajax);
+        if ($exit_on_error) {
+            exitWithWrapup($ajax); // will exit script
+        }
+    }
 	return $result;
 	}
 	
-function mysql_query_with_error_handling($query) {
-	global $link, $message_error;
-	$result = mysql_query($query,$link);
+function mysqli_query_with_error_handling($query, $exit_on_error = false, $ajax = false) {
+	global $linki, $message_error;
+	$result = mysqli_query($linki,$query);
 	if (!$result) {
-		$message_error .= $query."<br />".mysql_error($link)."<br />";
-		error_log($message_error);
+		log_query_error( $query, mysqli_error($linki), $ajax);
+		if ($exit_on_error) {
+            exitWithWrapup($ajax); // will exit script
+        }
 		}
 	return $result;
 	}
-	
-function rollback() { 
-	global $link, $message_error;
+
+function exitWithWrapup($ajax) {
+	global $header_used;
+    if (!empty($header_used) && !$ajax) {
+        switch ($header_used) {
+            case HEADER_BRAINSTORM:
+                brainstorm_footer();
+                break;
+            case HEADER_PARTICIPANT:
+                participant_footer();
+                break;
+            case HEADER_STAFF:
+                staff_footer();
+                break;
+        }
+    }
+    exit(-1);
+};
+
+function rollback() {
     mysql_query_with_error_handling("ROLLBACK;");
     }
 
+function rollback_mysqli($exit_on_error = false, $ajax = false) {
+    global $linki;
+    if (mysqli_rollback($linki)) {
+        return true;
+    }
+    log_query_error("<ROLLBACK>", mysqli_error($linki), $ajax);
+    if ($exit_on_error) {
+        exitWithWrapup($ajax); // will exit script
+    }
+    return false;
+}
+
 function populateCustomTextArray() {
-	global $customTextArray,$title;
-	//echo "<BR>Title:".$title.":<BR>\n";
-	if (isset($customTextArray))
-		array_splice($customTextArray,1); //should clear out $customTextArray
-	$query = "SELECT tag, textcontents FROM CustomText WHERE page = \"".$title."\";";
-	if (!$result=mysql_query_with_error_handling($query))
-		return(FALSE);
-	while($row = mysql_fetch_assoc($result)) {
-		$customTextArray[$row["tag"]] = $row["textcontents"];
-		}
-	return true;
-	}	
+    global $customTextArray, $title;
+    $customTextArray = array();
+    $query = "SELECT tag, textcontents FROM CustomText WHERE page = \"$title\";";
+    if (!$result = mysqli_query_with_error_handling($query))
+        return (FALSE);
+    while ($row = mysqli_fetch_assoc($result)) {
+        $customTextArray[$row["tag"]] = $row["textcontents"];
+    }
+    mysqli_free_result($result);
+    return true;
+}
 
 // Function prepare_db()
 // Opens database channel
@@ -73,66 +154,77 @@ if (!include ('../db_name.php'))
 	include ('./db_name.php'); // scripts which rely on this file (db_functions.php) may run from a different directory
 //date_define_timezone_set(TIMEZONE);
 function prepare_db() {
-    global $link;
+    global $link, $linki;
     $link = mysql_connect(DBHOSTNAME,DBUSERID,DBPASSWORD);
     if ($link === false)
 		return (false);
 	if (!mysql_select_db(DBDB,$link))
 		return (false);
-    return (mysql_set_charset("utf8",$link));
-    }
+    if (!mysql_set_charset("utf8",$link))
+        return (false);
+    $linki = mysqli_connect(DBHOSTNAME, DBUSERID, DBPASSWORD, DBDB);
+    if ($linki === false)
+        return (false);
+    return (mysqli_set_charset($linki, "utf8"));
+}
 
 
 // The table SessionEditHistory has a timestamp column which is automatically set to the
 // current timestamp by MySQL. 
 function record_session_history($sessionid, $badgeid, $name, $email, $editcode, $statusid) {
-	global $link, $message_error;
-	$name=mysql_real_escape_string($name,$link);
-	$email=mysql_real_escape_string($email,$link);
-	$query='';
-	$query.="INSERT INTO SessionEditHistory SET ";
-	$query.="sessionid=$sessionid, ";
-	$query.="badgeid='$badgeid', ";
-	$query.="name='$name', ";
-	$query.="email_address='$email', ";
-	$query.="sessioneditcode=$editcode, ";
-	$query.="statusid=$statusid";
-	return (mysql_query_with_error_handling($query));
-    }
+	global $linki, $message_error;
+	$name = mysqli_real_escape_string($name, $linki);
+	$email = mysqli_real_escape_string($email, $linki);
+	$query = <<<EOD
+INSERT INTO SessionEditHistory
+    SET
+        sessionid = $sessionid,
+        badgeid = "$badgeid",
+        name = "$name",
+        email_address = "$email",
+        sessioneditcode = $editcode,
+        statusid = $statusid;
+EOD;
+	return (mysqli_query_with_error_handling($query));
+}
+
 // Function get_name_and_email(&$name, &$email)
 // Gets name and email from db if they are available and not already set
 // returns FALSE if error condition encountered.  Error message in global $message_error
 function get_name_and_email(&$name, &$email) {
     global $link, $message_error, $badgeid;
-    if (isset($name) && $name!='') {
-        //$name="foo"; //for debugging only
-	return(TRUE);
-        }
+    if (!empty($name)) {
+        return (TRUE);
+    }
     if (isset($_SESSION['name'])) {
-        $name=$_SESSION['name'];
-        $email=$_SESSION['email'];
+        $name = $_SESSION['name'];
+        $email = $_SESSION['email'];
         //error_log("get_name_and_email found a name in the session variables.");
         return(TRUE);
-        }
-    if (may_I('Staff') || may_I('Participant')) { //name and email should be found in db if either set
-        $query="SELECT pubsname from Participants where badgeid='$badgeid'";
-        //error_log($query); //for debugging only
-		if (!$result=mysql_query_with_error_handling($query))
-			return(FALSE);
-        $name=mysql_result($result, 0);
-        if ($name=='') {
-            $name=' '; //if name is null or '' in db, set to ' ' so it won't appear unpopulated in query above
-            }
-        $query="SELECT badgename,email from CongoDump where badgeid='$badgeid'";
-		if (!$result=mysql_query_with_error_handling($query))
-			return(FALSE);
-        if ($name==' ') {
-            $name=mysql_result($result, 0, 0);
-            } // name will be ' ' if pubsname is null.  In that case use badgename.
-        $email=mysql_result($result, 0, 1);
-        }
-    return(TRUE); //return TRUE even if didn't retrieve from db because there's nothing to be done
     }
+    if (may_I('Staff') || may_I('Participant')) { //name and email should be found in db if either set
+        $query = "SELECT pubsname from Participants where badgeid = '$badgeid';";
+		if (!$result = mysqli_query_with_error_handling($query)) {
+            return(FALSE);
+        }
+        $name = mysqli_fetch_row($result)[0];
+		mysqli_free_result($result);
+        if ($name === '') {
+            $name = ' '; //if name is null or '' in db, set to ' ' so it won't appear unpopulated in query above
+        }
+        $query = "SELECT badgename, email from CongoDump where badgeid = \"$badgeid\";";
+		if (!$result = mysqli_query_with_error_handling($query)) {
+            return(FALSE);
+        }
+        $row = mysqli_fetch_row($result);
+        mysqli_free_result($result);
+        if ($name === ' ') {
+            $name = $row[0];
+        }
+        $email = $row[1];
+    }
+    return(TRUE); //return TRUE even if didn't retrieve from db because there's nothing to be done
+}
 
 // Function populate_select_from_table(...)
 // Reads parameters (see below) and a specified table from the db.
@@ -145,24 +237,25 @@ function populate_select_from_table($table_name, $default_value, $option_0_text,
     // assumes id's in the table start at 1
     // if $default_flag is true, the option 0 will always appear.
     // if $default_flag is false, the option 0 will only appear when $default_value is 0.
-    global $link;
-    if ($default_value==0) {
-            echo "<OPTION value=\"0\" selected>$option_0_text</OPTION>\n";
-            }
-        elseif ($default_flag) {
-            echo "<OPTION value=\"0\">$option_0_text</OPTION>\n";
-            }            
-    $query="Select * from $table_name order by display_order";
-	if (!$result=mysql_query_with_error_handling($query))
-		return(FALSE);
-    while (list($option_value,$option_name) = mysql_fetch_array($result, MYSQL_NUM)) {
-        echo "<OPTION value=\"$option_value\"";
-        if ($option_value==$default_value)
-            echo " selected";
-        echo ">$option_name</OPTION>\n";
+    global $linki;
+    if ($default_value == 0) {
+        echo "<OPTION value=\"0\" selected>$option_0_text</OPTION>\n";
+    } elseif ($default_flag) {
+        echo "<OPTION value=\"0\">$option_0_text</OPTION>\n";
+    }
+    $query = "Select * from $table_name order by display_order";
+    if (!$result = mysqli_query_with_error_handling($query)) {
+        return (FALSE);
+    }
+    while (list($option_value, $option_name) = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        echo "<option value=\"$option_value\"";
+        if ($option_value == $default_value) {
+            echo " selected=\"selected\"";
         }
-	return(TRUE);
-	}
+        echo ">$option_name</option>\n";
+    }
+    return (TRUE);
+}
 
 // Function populate_select_from_query(...)
 // Reads parameters (see below) and a specified query for the db.

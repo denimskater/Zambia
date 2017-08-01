@@ -1,9 +1,9 @@
 <?php
-//	$Header$
-//	Copyright (c) 2011-2016 The Zambia Group. All rights reserved. See copyright document for more details.
+//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
     function staff_header($title) {
     require_once ("javascript_functions.php");
-    global $badgeid, $message, $fullPage;
+    global $badgeid, $fullPage, $header_used, $message;
+    $header_used = HEADER_STAFF;
 ?>
 <!DOCTYPE html>
 <html lang="en" <?php if ($fullPage) echo "class =\"fullPage\""; ?> >

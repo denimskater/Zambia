@@ -23,19 +23,13 @@
     if ($delcount > 0) {
 		$dellist = substr($dellist, 0, -2); //remove trailing ", "
         $query = "DELETE FROM ParticipantSessionInterest WHERE badgeid=\"$badgeid\" AND sessionid in ($dellist)";
-        if (!mysql_query_with_error_handling($query)) {
-		    RenderError($title,$message_error);
-            exit();
-            }
+        mysql_query_with_error_handling($query, true);
         }
 	$inscount = count($insarray);
 	if ($inscount > 0) {
 		foreach ($insarray as $i => $id) {
 			$query="INSERT INTO ParticipantSessionInterest SET badgeid=\"$badgeid\", sessionid = $id";
-            if (!mysql_query_with_error_handling($query)) {
-			    RenderError($title,$message_error);
-                exit();
-				}
+            mysql_query_with_error_handling($query, true);
 			}
 		}
     $message=""; 

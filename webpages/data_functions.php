@@ -235,7 +235,11 @@ function parse_mysql_time($time) {
 // Takes the string $time in "hhh:mm:ss" and return array of "hours", "minutes", and "seconds"
 //
 function parse_mysql_time_hours($time) {
-    sscanf($time,"%d:%d:%d",$hours,$minutes,$seconds);
+    $result=array();
+    $hours = "";
+    $minutes = "";
+    $seconds = "";
+    sscanf($time,"%d:%d:%d", $hours, $minutes, $seconds);
     $result['hours']=$hours;
     $result['minutes']=$minutes;
     $result['seconds']=$seconds;
