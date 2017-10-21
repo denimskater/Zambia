@@ -78,28 +78,28 @@ function mysqli_query_exit_on_error($query) {
 }
 
 function mysql_query_with_error_handling($query, $exit_on_error = false, $ajax = false) {
-	global $link, $message_error;
-	$result = mysql_query($query, $link);
-	if (!$result) {
+    global $link, $message_error;
+    $result = mysql_query($query, $link);
+    if (!$result) {
         log_query_error($query, mysql_error($link), $ajax);
         if ($exit_on_error) {
             exitWithWrapup($ajax); // will exit script
         }
     }
-	return $result;
-	}
-	
+    return $result;
+}
+
 function mysqli_query_with_error_handling($query, $exit_on_error = false, $ajax = false) {
-	global $linki, $message_error;
-	$result = mysqli_query($linki,$query);
-	if (!$result) {
-		log_query_error( $query, mysqli_error($linki), $ajax);
-		if ($exit_on_error) {
+    global $linki, $message_error;
+    $result = mysqli_query($linki, $query);
+    if (!$result) {
+        log_query_error($query, mysqli_error($linki), $ajax);
+        if ($exit_on_error) {
             exitWithWrapup($ajax); // will exit script
         }
-		}
-	return $result;
-	}
+    }
+    return $result;
+}
 
 function exitWithWrapup($ajax) {
 	global $header_used;
@@ -121,7 +121,7 @@ function exitWithWrapup($ajax) {
 
 function rollback() {
     mysql_query_with_error_handling("ROLLBACK;");
-    }
+}
 
 function rollback_mysqli($exit_on_error = false, $ajax = false) {
     global $linki;
@@ -172,9 +172,9 @@ function prepare_db() {
 // The table SessionEditHistory has a timestamp column which is automatically set to the
 // current timestamp by MySQL. 
 function record_session_history($sessionid, $badgeid, $name, $email, $editcode, $statusid) {
-	global $linki, $message_error;
-	$name = mysqli_real_escape_string($name, $linki);
-	$email = mysqli_real_escape_string($email, $linki);
+	global $linki;
+	$name = mysqli_real_escape_string($linki, $name);
+	$email = mysqli_real_escape_string($linki, $email);
 	$query = <<<EOD
 INSERT INTO SessionEditHistory
     SET
@@ -192,7 +192,7 @@ EOD;
 // Gets name and email from db if they are available and not already set
 // returns FALSE if error condition encountered.  Error message in global $message_error
 function get_name_and_email(&$name, &$email) {
-    global $link, $message_error, $badgeid;
+    global $badgeid;
     if (!empty($name)) {
         return (TRUE);
     }
@@ -203,7 +203,7 @@ function get_name_and_email(&$name, &$email) {
         return(TRUE);
     }
     if (may_I('Staff') || may_I('Participant')) { //name and email should be found in db if either set
-        $query = "SELECT pubsname from Participants where badgeid = '$badgeid';";
+        $query = "SELECT pubsname FROM Participants WHERE badgeid = '$badgeid';";
 		if (!$result = mysqli_query_with_error_handling($query)) {
             return(FALSE);
         }
@@ -212,7 +212,7 @@ function get_name_and_email(&$name, &$email) {
         if ($name === '') {
             $name = ' '; //if name is null or '' in db, set to ' ' so it won't appear unpopulated in query above
         }
-        $query = "SELECT badgename, email from CongoDump where badgeid = \"$badgeid\";";
+        $query = "SELECT badgename, email FROM CongoDump WHERE badgeid = \"$badgeid\";";
 		if (!$result = mysqli_query_with_error_handling($query)) {
             return(FALSE);
         }
@@ -237,13 +237,12 @@ function populate_select_from_table($table_name, $default_value, $option_0_text,
     // assumes id's in the table start at 1
     // if $default_flag is true, the option 0 will always appear.
     // if $default_flag is false, the option 0 will only appear when $default_value is 0.
-    global $linki;
     if ($default_value == 0) {
-        echo "<OPTION value=\"0\" selected>$option_0_text</OPTION>\n";
+        echo "<option value=\"0\" selected>$option_0_text</option>\n";
     } elseif ($default_flag) {
-        echo "<OPTION value=\"0\">$option_0_text</OPTION>\n";
+        echo "<option value=\"0\">$option_0_text</option>\n";
     }
-    $query = "Select * from $table_name order by display_order";
+    $query = "Select * FROM $table_name ORDER BY display_order;";
     if (!$result = mysqli_query_with_error_handling($query)) {
         return (FALSE);
     }
@@ -254,6 +253,7 @@ function populate_select_from_table($table_name, $default_value, $option_0_text,
         }
         echo ">$option_name</option>\n";
     }
+    mysqli_free_result($result);
     return (TRUE);
 }
 
@@ -268,21 +268,20 @@ function populate_select_from_query($query, $default_value, $option_0_text, $def
     // assumes id's in the table start at 1
     // if $default_flag is true, the option 0 will always appear.
     // if $default_flag is false, the option 0 will only appear when $default_value is 0.
-    global $link;
-    if ($default_value==0) {
-            echo "<OPTION value=\"0\" selected>$option_0_text</OPTION>\n";
-            }
-        elseif ($default_flag) {
-            echo "<OPTION value=\"0\">$option_0_text</OPTION>\n";
-            }            
-    $result=mysql_query($query,$link);
-    while (list($option_value,$option_name)= mysql_fetch_array($result, MYSQL_NUM)) {
-        echo "<OPTION value=\"$option_value\"";
-        if ($option_value==$default_value)
-            echo " selected";
-        echo ">$option_name</OPTION>\n";
-        }
+    if ($default_value == 0) {
+        echo "<option value=\"0\" selected>$option_0_text</option>\n";
+    } elseif ($default_flag) {
+        echo "<option value=\"0\">$option_0_text</option>\n";
     }
+    $result = mysqli_query_with_error_handling($query);
+    while (list($option_value, $option_name) = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        echo "<option value=\"$option_value\"";
+        if ($option_value == $default_value)
+            echo " selected";
+        echo ">$option_name</option>\n";
+    }
+    mysqli_free_result($result);
+}
 
 // Function populate_multiselect_from_table(...)
 // Reads parameters (see below) and a specified table from the db.
@@ -292,18 +291,21 @@ function populate_select_from_query($query, $default_value, $option_0_text, $def
 function populate_multiselect_from_table($table_name, $skipset) {
     // assumes id's in the table start at 1 '
     // skipset is array of integers of values of id from table to preselect
-    global $link;
     // error_log("Zambia->populate_multiselect_from_table->\$skipset: ".print_r($skipset,TRUE)."\n"); // only for debugging
-    if ($skipset=="") $skipset=array(-1);
-    $result=mysql_query("Select * from ".$table_name." order by display_order",$link);
-    while (list($option_value,$option_name)= mysql_fetch_array($result, MYSQL_NUM)) {
-        echo "<OPTION value=\"".$option_value."\"";
-        if (array_search($option_value,$skipset)!==FALSE) {
-        echo " selected";
-            }
-        echo">$option_name</OPTION>\n";    
-        }
+    if ($skipset == "") {
+        $skipset = array(-1);
     }
+    $query = "SELECT * FROM $table_name ORDER BY display_order;";
+    $result = mysqli_query_with_error_handling($query);
+    while (list($option_value, $option_name) = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        echo "<option value=\"$option_value\"";
+        if (array_search($option_value, $skipset) !== FALSE) {
+            echo " selected=\"selected\"";
+        }
+        echo ">$option_name</option>\n";
+    }
+    mysqli_free_result($result);
+}
 
 // Function populate_multisource_from_table(...)
 // Reads parameters (see below) and a specified table from the db.
@@ -313,15 +315,18 @@ function populate_multiselect_from_table($table_name, $skipset) {
 function populate_multisource_from_table($table_name, $skipset) {
     // assumes id's in the table start at 1 '
     // skipset is array of integers of values of id from table not to include
-    global $link;
-    if ($skipset=="") $skipset=array(-1);
-    $result=mysql_query("Select * from ".$table_name." order by display_order",$link);
-    while (list($option_value,$option_name)= mysql_fetch_array($result, MYSQL_NUM)) {
-        if (array_search($option_value,$skipset)===false) {
-        echo "<OPTION value=".$option_value.">".$option_name."</OPTION>\n";
-            }
+    if ($skipset == "") {
+        $skipset = array(-1);
+    }
+    $query = "SELECT * FROM $table_name ORDER BY display_order;";
+    $result = mysqli_query_with_error_handling($query);
+    while (list($option_value, $option_name) = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        if (array_search($option_value, $skipset) === false) {
+            echo "<option value=\"$option_value\" >$option_name</option>\n";
         }
     }
+    mysqli_free_result($result);
+}
 
 // Function populate_multidest_from_table(...)
 // Reads parameters (see below) and a specified table from the db.
@@ -332,77 +337,128 @@ function populate_multidest_from_table($table_name, $skipset) {
     // assumes id's in the table start at 1                        '
     // skipset is array of integers of values of id from table to include
     // in "dest" because they were skipped from "source"
-    global $link;
-    if ($skipset=="") $skipset=array(-1);
-    $result=mysql_query("Select * from ".$table_name." order by display_order",$link);
-    while (list($option_value,$option_name)= mysql_fetch_array($result, MYSQL_NUM)) {
-        if (array_search($option_value,$skipset)!==false) {
-            echo "<OPTION value=".$option_value.">".$option_name."</OPTION>\n";
-            }
+    if ($skipset == "") {
+        $skipset = array(-1);
+    }
+    $query = "SELECT * FROM $table_name ORDER BY display_order;";
+    $result = mysqli_query_with_error_handling($query);
+    while (list($option_value, $option_name) = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        if (array_search($option_value, $skipset) !== false) {
+            echo "<option value=\"$option_value\" >$option_name</option>\n";
         }
     }
+    mysqli_free_result($result);
+}
+
 // Function update_session()
 // Takes data from global $session array and updates
 // the tables Sessions, SessionHasFeature, and SessionHasService.
 //
 function update_session() {
-    global $link, $session, $message2;
-    $query="UPDATE Sessions set ";
-    $query.="trackid=".$session["track"].", ";
-    $query.="typeid=".$session["type"].", ";
-    $query.="divisionid=".$session["divisionid"].", ";
-    $query.="pubstatusid=".$session["pubstatusid"].", ";
-    $query.="languagestatusid=".$session["languagestatusid"].", ";
-    $query.="pubsno=\"".mysql_real_escape_string($session["pubno"],$link)."\", ";
-    $query.="title=\"".mysql_real_escape_string($session["title"],$link)."\", ";
-    $query.="secondtitle=\"".mysql_real_escape_string($session["secondtitle"],$link)."\", ";
-    $query.="pocketprogtext=\"".mysql_real_escape_string($session["pocketprogtext"],$link)."\", ";
-    $query.="progguiddesc=\"".mysql_real_escape_string($session["progguiddesc"],$link)."\", ";
-    $query.="persppartinfo=\"".mysql_real_escape_string($session["persppartinfo"],$link)."\", ";
-    if (DURATION_IN_MINUTES=="TRUE") {
-            $query.="duration=\"".conv_min2hrsmin($session["duration"],$link)."\", ";
-            }
-        else {
-            $query.="duration=\"".mysql_real_escape_string($session["duration"],$link)."\", ";
-            }
-    $query.="estatten=".($session["atten"]!=""?$session["atten"]:"null").", ";
-    $query.="kidscatid=".$session["kids"].", ";
-    $query.="signupreq=".($session["signup"]?"1":"0").", ";
-    $query.="invitedguest=".($session["invguest"]?"1":"0").", ";
-    $query.="roomsetid=".$session["roomset"].", ";
-    $query.="notesforpart=\"".mysql_real_escape_string($session["notesforpart"],$link)."\", ";
-    $query.="servicenotes=\"".mysql_real_escape_string($session["servnotes"],$link)."\", ";
-    $query.="statusid=".$session["status"].", ";
-    $query.="notesforprog=\"".mysql_real_escape_string($session["notesforprog"],$link)."\" ";
-    $query.=" WHERE sessionid=".$session["sessionid"];
-    $message2=$query;
-    if (!mysql_query($query,$link)) { return false; }
-    $query="DELETE from SessionHasFeature where sessionid=".$session["sessionid"];
-    $message2=$query;
-    if (!mysql_query($query,$link)) { return false; }
-    $id=$session["sessionid"];
-    if ($session["featdest"]!="") {
-        for ($i=0 ; $session["featdest"][$i]!="" ; $i++ ) {
-            $query="INSERT into SessionHasFeature set sessionid=".$id.", featureid=";
-            $query.=$session["featdest"][$i];
-            $message2=$query;
-            if (!mysql_query($query,$link)) { return false; }
-            }
+    global $linki, $session, $message2;
+    $session2 = array();
+    $session2["track"] = filter_var($session["track"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["type"] = filter_var($session["type"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["divisionid"] = filter_var($session["divisionid"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["pubstatusid"] = filter_var($session["pubstatusid"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["languagestatusid"] = filter_var($session["languagestatusid"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["pubno"] = mysqli_real_escape_string($linki, $session["pubno"]);
+    $session2["title"] = mysqli_real_escape_string($linki, $session["title"]);
+    $session2["secondtitle"] = mysqli_real_escape_string($linki, $session["secondtitle"]);
+    $session2["pocketprogtext"] = mysqli_real_escape_string($linki, $session["pocketprogtext"]);
+    $session2["progguiddesc"] = mysqli_real_escape_string($linki, $session["progguiddesc"]);
+    $session2["persppartinfo"] = mysqli_real_escape_string($linki, $session["persppartinfo"]);
+    if (DURATION_IN_MINUTES == "TRUE") {
+        $session2["duration"] = conv_min2hrsmin($session["duration"]);
+    } else {
+        $session2["duration"] = mysqli_real_escape_string($linki, $session["duration"]);
+    }
+    $session2["estatten"] = empty($session["atten"]) ? "NULL" : "\"{$session["atten"]}\"";
+    $session2["kidscatid"] = filter_var($session["kids"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["signupreq"] = empty($session["signup"]) ? "0" : "1";
+    $session2["invitedguest"] = empty($session["invguest"]) ? "0" : "1";
+    $session2["roomsetid"] = filter_var($session["roomset"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["pocketprogtext"] = mysqli_real_escape_string($linki, $session["pocketprogtext"]);
+    $session2["notesforpart"] = mysqli_real_escape_string($linki, $session["notesforpart"]);
+    $session2["servnotes"] = mysqli_real_escape_string($linki, $session["servnotes"]);
+    $session2["status"] = filter_var($session["status"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["notesforprog"] = mysqli_real_escape_string($linki, $session["notesforprog"]);
+    $id = filter_var($session["sessionid"], FILTER_SANITIZE_NUMBER_INT);
+
+    $query=<<<EOD
+UPDATE Sessions SET
+        trackid="{$session2["track"]}",
+        typeid="{$session2["type"]}",
+        divisionid="{$session2["divisionid"]}",
+        pubstatusid="{$session2["pubstatusid"]}",
+        languagestatusid="{$session2["languagestatusid"]}",
+        pubsno="{$session2["pubno"]}",
+        title="{$session2["title"]}",
+        secondtitle="{$session2["secondtitle"]}",
+        pocketprogtext="{$session2["pocketprogtext"]}",
+        progguiddesc="{$session2["progguiddesc"]}",
+        persppartinfo="{$session2["persppartinfo"]}",
+        duration="{$session2["duration"]}",
+        estatten={$session2["estatten"]},
+        kidscatid="{$session["kidscatid"]}",
+        signupreq={$session2["signupreq"]},
+        invitedguest={$session2["invitedguest"]},
+        roomsetid="{$session2["roomsetid"]}",
+        notesforpart="{$session2["notesforpart"]}",
+        servicenotes="{$session2["servnotes"]}",
+        statusid="{$session2["status"]}",
+        notesforprog="{$session2["notesforprog"]}"
+    WHERE
+        sessionid = $id;
+EOD;
+    if (!mysqli_query_with_error_handling($query)) {
+        return false;
+    }
+    $query = "DELETE FROM SessionHasFeature WHERE sessionid = $id;";
+    if (!mysqli_query_with_error_handling($query)) {
+        return false;
+    }
+    if (!empty($session["featdest"])) {
+        $query = "INSERT INTO SessionHasFeature (sessionid, featureid) VALUES ";
+        for ($i = 0 ; !empty($session["featdest"][$i]) ; $i++ ) {
+            $thisFeat = filter_var($session["featdest"][$i], FILTER_SANITIZE_NUMBER_INT);
+            $query .= "($id, $thisFeat),";
         }
-    $query="DELETE from SessionHasService where sessionid=".$session["sessionid"];
-    $message2=$query;
-    if (!mysql_query($query,$link)) { return false; }
-    if ($session["servdest"]!="") {
-        for ($i=0 ; $session["servdest"][$i]!="" ; $i++ ) {
-            $query="INSERT into SessionHasService set sessionid=".$id.", serviceid=";
-            $query.=$session["servdest"][$i];
-            $message2=$query;
-            if (!mysql_query($query,$link)) { return false; }
-            }
+        $query = substr($query, 0, -1) . ";"; // drop trailing comma
+        if (!mysqli_query_with_error_handling($query)) {
+            return false;
         }
-    $query="DELETE from SessionHasPubChar where sessionid=".$session["sessionid"];
-    $message2=$query;
-    if (!mysql_query($query,$link)) { return false; }
+    }
+    $query = "DELETE FROM SessionHasService WHERE sessionid = $id;";
+    if (!mysqli_query_with_error_handling($query)) {
+        return false;
+    }
+    if (!empty($session["servdest"])) {
+        $query = "INSERT INTO SessionHasService (sessionid, serviceid) VALUES ";
+        for ($i = 0 ; !empty($session["servdest"][$i]) ; $i++ ) {
+            $thisServ = filter_var($session["servdest"][$i], FILTER_SANITIZE_NUMBER_INT);
+            $query .= "($id, $thisServ),";
+        }
+        $query = substr($query, 0, -1) . ";"; // drop trailing comma
+        if (!mysqli_query_with_error_handling($query)) {
+            return false;
+        }
+    }
+    $query = "DELETE FROM SessionHasPubChar WHERE sessionid = $id;";
+    if (!mysqli_query_with_error_handling($query)) {
+        return false;
+    }
+    if (!empty($session["servdest"])) {
+        $query = "INSERT INTO SessionHasService (sessionid, serviceid) VALUES ";
+        for ($i = 0 ; !empty($session["servdest"][$i]) ; $i++ ) {
+            $thisServ = filter_var($session["servdest"][$i], FILTER_SANITIZE_NUMBER_INT);
+            $query .= "($id, $thisServ),";
+        }
+        $query = substr($query, 0, -1) . ";"; // drop trailing comma
+        if (!mysqli_query_with_error_handling($query)) {
+            return false;
+        }
+    }
     if ($session["pubchardest"]!="") {
         //error_log("Zamiba->update_session->\$session[\"pubchardest\"]: ".print_r($session["pubchardest"],TRUE)); // for debugging only
         for ($i=0 ; $session["pubchardest"][$i]!="" ; $i++ ) {
@@ -450,7 +506,7 @@ function insert_session() {
     $query.="progguiddesc=\"".mysql_real_escape_string($session["progguiddesc"],$link).'",';
     $query.="persppartinfo=\"".mysql_real_escape_string($session["persppartinfo"],$link).'",';
     if (DURATION_IN_MINUTES=="TRUE") {
-            $query.="duration=\"".conv_min2hrsmin($session["duration"],$link)."\", ";
+            $query.="duration=\"".conv_min2hrsmin($session["duration"])."\", ";
             }
         else {
             $query.="duration=\"".mysql_real_escape_string($session["duration"],$link)."\", ";
@@ -918,7 +974,7 @@ function unlock_participant($badgeid) {
 function get_sstatus() {
     global $link, $sstatus;
     $query = "SELECT statusid, may_be_scheduled, validate from SessionStatuses";
-    $result=mysql_query($query,$link);
+    $result=mysqli_query($query,$link);
     while ($arow = mysql_fetch_array($result, MYSQL_ASSOC)) {
         $statusid=$arow['statusid'];
         $may_be_scheduled=($arow['may_be_scheduled']==1?1:0);
