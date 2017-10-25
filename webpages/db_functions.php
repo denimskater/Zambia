@@ -448,111 +448,169 @@ EOD;
     if (!mysqli_query_with_error_handling($query)) {
         return false;
     }
-    if (!empty($session["servdest"])) {
-        $query = "INSERT INTO SessionHasService (sessionid, serviceid) VALUES ";
-        for ($i = 0 ; !empty($session["servdest"][$i]) ; $i++ ) {
-            $thisServ = filter_var($session["servdest"][$i], FILTER_SANITIZE_NUMBER_INT);
-            $query .= "($id, $thisServ),";
+    if (!empty($session["pubchardest"])) {
+        $query = "INSERT INTO SessionHasPubChar (sessionid, pubcharid) VALUES ";
+        for ($i = 0 ; !empty($session["pubchardest"][$i]) ; $i++ ) {
+            $thisPubChar = filter_var($session["pubchardest"][$i], FILTER_SANITIZE_NUMBER_INT);
+            $query .= "($id, $thisPubChar),";
         }
         $query = substr($query, 0, -1) . ";"; // drop trailing comma
         if (!mysqli_query_with_error_handling($query)) {
             return false;
         }
     }
-    if ($session["pubchardest"]!="") {
-        //error_log("Zamiba->update_session->\$session[\"pubchardest\"]: ".print_r($session["pubchardest"],TRUE)); // for debugging only
-        for ($i=0 ; $session["pubchardest"][$i]!="" ; $i++ ) {
-            $query="INSERT into SessionHasPubChar set sessionid=".$id.", pubcharid=";
-            $query.=$session["pubchardest"][$i];
-            $message2=$query;
-            if (!mysql_query($query,$link)) { return false; }
-            }
-        }
-
     return true;
-    }
+}
 
 // Function get_next_session_id()
 // Reads Session table from db to determine next unused value
 // of sessionid.
 //
 function get_next_session_id() {
-    global $link;
-    $result=mysql_query("SELECT MAX(sessionid) FROM Sessions",$link);
-    if (!$result) {return "";}
-    list($maxid)=mysql_fetch_array($result, MYSQL_NUM);
-    if (!$maxid) {return "1";}
-    return $maxid+1;
+    global $linki;
+    $result = mysqli_query_with_error_handling("SELECT MAX(sessionid) FROM Sessions;");
+    if (!$result) {
+        return "";
     }
+    list($maxid) = mysqli_fetch_array($result, MYSQLI_NUM);
+    mysqli_free_result($result);
+    if (!$maxid) {
+        return "1";
+    }
+    return $maxid + 1;
+}
 
 // Function insert_session()
 // Takes data from global $session array and creates new rows in
 // the tables Sessions, SessionHasFeature, and SessionHasService.
 //
 function insert_session() {
-    global $session, $link, $query, $message_error;
-    $query="INSERT into Sessions set ";
-    $query.="trackid=".$session["track"].',';
-    $temp=$session["type"];
-    $query.="typeid=".(($temp==0)?"null":$temp).", ";
-    $temp=$session["divisionid"];
-    $query.="divisionid=".(($temp==0)?"null":$temp).", ";
-    $query.="pubstatusid=".$session["pubstatusid"].',';
-    $query.="languagestatusid=".$session["languagestatusid"].',';
-    $query.="pubsno=\"".mysql_real_escape_string($session["pubno"],$link).'",';
-    $query.="title=\"".mysql_real_escape_string($session["title"],$link).'",';
-    $query.="secondtitle=\"".mysql_real_escape_string($session["secondtitle"],$link).'",';
-    $query.="pocketprogtext=\"".mysql_real_escape_string($session["pocketprogtext"],$link).'",';
-    $query.="progguiddesc=\"".mysql_real_escape_string($session["progguiddesc"],$link).'",';
-    $query.="persppartinfo=\"".mysql_real_escape_string($session["persppartinfo"],$link).'",';
-    if (DURATION_IN_MINUTES=="TRUE") {
-            $query.="duration=\"".conv_min2hrsmin($session["duration"])."\", ";
-            }
-        else {
-            $query.="duration=\"".mysql_real_escape_string($session["duration"],$link)."\", ";
-            }
-    $query.="estatten=".($session["atten"]!=""?$session["atten"]:"null").',';
-    $query.="kidscatid=".$session["kids"].',';
-    $query.="signupreq=";
-    if ($session["signup"]) {$query.="1,";} else {$query.="0,";}
-    $temp=$session["roomset"];
-    $query.="roomsetid=".(($temp==0)?"null":$temp).", ";
-    $query.="notesforpart=\"".mysql_real_escape_string($session["notesforpart"],$link).'",';
-    $query.="servicenotes=\"".mysql_real_escape_string($session["servnotes"],$link).'",';
-    $query.="statusid=".$session["status"].',';
-    $query.="notesforprog=\"".mysql_real_escape_string($session["notesforprog"],$link).'",';
-    $query.="warnings=0,invitedguest="; // warnings db field not editable by form
-    if ($session["invguest"]) {$query.="1";} else {$query.="0";}
-    $result = mysql_query($query,$link);
+    global $session, $linki;
+    $query = "INSERT INTO Sessions SET ";
+    $query .= "trackid=" . $session["track"] . ',';
+    $temp = $session["type"];
+    $query .= "typeid=" . (($temp == 0) ? "null" : $temp) . ", ";
+    $temp = $session["divisionid"];
+    $query .= "divisionid=" . (($temp == 0) ? "null" : $temp) . ", ";
+    $query .= "pubstatusid=" . $session["pubstatusid"] . ',';
+    $query .= "languagestatusid=" . $session["languagestatusid"] . ',';
+    $query .= "pubsno=\"" . mysql_real_escape_string($session["pubno"], $link) . '",';
+    $query .= "title=\"" . mysql_real_escape_string($session["title"], $link) . '",';
+    $query .= "secondtitle=\"" . mysql_real_escape_string($session["secondtitle"], $link) . '",';
+    $query .= "pocketprogtext=\"" . mysql_real_escape_string($session["pocketprogtext"], $link) . '",';
+    $query .= "progguiddesc=\"" . mysql_real_escape_string($session["progguiddesc"], $link) . '",';
+    $query .= "persppartinfo=\"" . mysql_real_escape_string($session["persppartinfo"], $link) . '",';
+    if (DURATION_IN_MINUTES == "TRUE") {
+        $query .= "duration=\"" . conv_min2hrsmin($session["duration"]) . "\", ";
+    } else {
+        $query .= "duration=\"" . mysql_real_escape_string($session["duration"], $link) . "\", ";
+    }
+    $query .= "estatten=" . ($session["atten"] != "" ? $session["atten"] : "null") . ',';
+    $query .= "kidscatid=" . $session["kids"] . ',';
+    $query .= "signupreq=";
+    if ($session["signup"]) {
+        $query .= "1,";
+    } else {
+        $query .= "0,";
+    }
+    $temp = $session["roomset"];
+    $query .= "roomsetid=" . (($temp == 0) ? "null" : $temp) . ", ";
+    $query .= "notesforpart=\"" . mysql_real_escape_string($session["notesforpart"], $link) . '",';
+    $query .= "servicenotes=\"" . mysql_real_escape_string($session["servnotes"], $link) . '",';
+    $query .= "statusid=" . $session["status"] . ',';
+    $query .= "notesforprog=\"" . mysql_real_escape_string($session["notesforprog"], $link) . '",';
+    $query .= "warnings=0,invitedguest="; // warnings db field not editable by form
+    if ($session["invguest"]) {
+        $query .= "1";
+    } else {
+        $query .= "0";
+    }
+    $result = mysql_query($query, $link);
     if (!$result) {
-        $message_error=mysql_error($link);
+        $message_error = mysql_error($link);
         return $result;
-        }
+    }
     $id = mysql_insert_id($link);
-    if ($session["featdest"]!="") {
-        for ($i=0 ; $session["featdest"][$i]!="" ; $i++ ) {
-            $query="INSERT into SessionHasFeature set sessionid=".$id.", featureid=";
-            $query.=$session["featdest"][$i];
-            $result = mysql_query($query,$link);
-            }
+    if ($session["featdest"] != "") {
+        for ($i = 0; $session["featdest"][$i] != ""; $i++) {
+            $query = "INSERT INTO SessionHasFeature SET sessionid=" . $id . ", featureid=";
+            $query .= $session["featdest"][$i];
+            $result = mysql_query($query, $link);
         }
-    if ($session["servdest"]!="") {
-        for ($i=0 ; $session["servdest"][$i]!="" ; $i++ ) {
-            $query="INSERT into SessionHasService sessionid=".$id.", serviceid=";
-            $query.=$session["servdest"][$i];
-            $result = mysql_query($query,$link);
-            }
+    }
+    if ($session["servdest"] != "") {
+        for ($i = 0; $session["servdest"][$i] != ""; $i++) {
+            $query = "INSERT INTO SessionHasService SET sessionid=" . $id . ", serviceid=";
+            $query .= $session["servdest"][$i];
+            $result = mysql_query($query, $link);
         }
-    if ($session["pubchardest"]!="") {
-        for ($i=0 ; $session["pubchardest"][$i]!="" ; $i++ ) {
-            $query="INSERT into SessionHasPubChar sessionid=".$id.", pubcharid=";
-            $query.=$session["pubchardest"][$i];
-            $result = mysql_query($query,$link);
-            }
+    }
+    if ($session["pubchardest"] != "") {
+        for ($i = 0; $session["pubchardest"][$i] != ""; $i++) {
+            $query = "INSERT INTO SessionHasPubChar SET sessionid=" . $id . ", pubcharid=";
+            $query .= $session["pubchardest"][$i];
+            $result = mysql_query($query, $link);
         }
+    }
 
     return $id;
+}
+
+// Function filter_session()
+// Takes data from global $session array returns array with filtered data
+//
+function filter_session() {
+    global $linki, $session;
+    $session2 = array();
+    $session2["track"] = filter_var($session["track"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["type"] = filter_var($session["type"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["divisionid"] = filter_var($session["divisionid"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["pubstatusid"] = filter_var($session["pubstatusid"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["languagestatusid"] = filter_var($session["languagestatusid"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["pubno"] = mysqli_real_escape_string($linki, $session["pubno"]);
+    $session2["title"] = mysqli_real_escape_string($linki, $session["title"]);
+    $session2["secondtitle"] = mysqli_real_escape_string($linki, $session["secondtitle"]);
+    $session2["pocketprogtext"] = mysqli_real_escape_string($linki, $session["pocketprogtext"]);
+    $session2["progguiddesc"] = mysqli_real_escape_string($linki, $session["progguiddesc"]);
+    $session2["persppartinfo"] = mysqli_real_escape_string($linki, $session["persppartinfo"]);
+    if (DURATION_IN_MINUTES == "TRUE") {
+        $session2["duration"] = conv_min2hrsmin($session["duration"]);
+    } else {
+        $session2["duration"] = mysqli_real_escape_string($linki, $session["duration"]);
     }
+    $session2["estatten"] = empty($session["atten"]) ? "NULL" : "\"{$session["atten"]}\"";
+    $session2["kidscatid"] = filter_var($session["kids"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["signupreq"] = empty($session["signup"]) ? "0" : "1";
+    $session2["invitedguest"] = empty($session["invguest"]) ? "0" : "1";
+    $session2["roomsetid"] = filter_var($session["roomset"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["pocketprogtext"] = mysqli_real_escape_string($linki, $session["pocketprogtext"]);
+    $session2["notesforpart"] = mysqli_real_escape_string($linki, $session["notesforpart"]);
+    $session2["servnotes"] = mysqli_real_escape_string($linki, $session["servnotes"]);
+    $session2["status"] = filter_var($session["status"], FILTER_SANITIZE_NUMBER_INT);
+    $session2["notesforprog"] = mysqli_real_escape_string($linki, $session["notesforprog"]);
+    $session2["id"] = filter_var($session["sessionid"], FILTER_SANITIZE_NUMBER_INT);
+
+    if (!empty($session["featdest"])) {
+        $session2["features"] = array();
+        foreach ($session["featdest"] as $feature) {
+            $session2["features"][] = filter_var($feature, FILTER_SANITIZE_NUMBER_INT);
+        }
+    }
+    if (!empty($session["servdest"])) {
+        $session2["services"] = array();
+        foreach ($session["servdest"] as $service) {
+            $session2["services"][] = filter_var($service, FILTER_SANITIZE_NUMBER_INT);
+        }
+    }
+    if (!empty($session["pubchardest"])) {
+        $session2["pubchars"] = array();
+        foreach ($session["pubchardest"] as $pubchar) {
+            $session2["pubchars"][] = filter_var($pubchar, FILTER_SANITIZE_NUMBER_INT);
+        }
+    }
+
+    return $session2;
+}
 
 // Function retrieve_session_from_db()
 // Reads Sessions, SessionHasFeature, and SessionHasService tables
