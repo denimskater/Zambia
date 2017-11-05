@@ -1,5 +1,5 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
 
 function mysql_query_XML($query_array) {
 	global $linki, $message_error;
@@ -352,62 +352,35 @@ function populate_multidest_from_table($table_name, $skipset) {
 
 // Function update_session()
 // Takes data from global $session array and updates
-// the tables Sessions, SessionHasFeature, and SessionHasService.
+// the tables Sessions, SessionHasFeature, SessionHasService and SessionHasPubChar.
 //
 function update_session() {
-    global $linki, $session, $message2;
-    $session2 = array();
-    $session2["track"] = filter_var($session["track"], FILTER_SANITIZE_NUMBER_INT);
-    $session2["type"] = filter_var($session["type"], FILTER_SANITIZE_NUMBER_INT);
-    $session2["divisionid"] = filter_var($session["divisionid"], FILTER_SANITIZE_NUMBER_INT);
-    $session2["pubstatusid"] = filter_var($session["pubstatusid"], FILTER_SANITIZE_NUMBER_INT);
-    $session2["languagestatusid"] = filter_var($session["languagestatusid"], FILTER_SANITIZE_NUMBER_INT);
-    $session2["pubno"] = mysqli_real_escape_string($linki, $session["pubno"]);
-    $session2["title"] = mysqli_real_escape_string($linki, $session["title"]);
-    $session2["secondtitle"] = mysqli_real_escape_string($linki, $session["secondtitle"]);
-    $session2["pocketprogtext"] = mysqli_real_escape_string($linki, $session["pocketprogtext"]);
-    $session2["progguiddesc"] = mysqli_real_escape_string($linki, $session["progguiddesc"]);
-    $session2["persppartinfo"] = mysqli_real_escape_string($linki, $session["persppartinfo"]);
-    if (DURATION_IN_MINUTES == "TRUE") {
-        $session2["duration"] = conv_min2hrsmin($session["duration"]);
-    } else {
-        $session2["duration"] = mysqli_real_escape_string($linki, $session["duration"]);
-    }
-    $session2["estatten"] = empty($session["atten"]) ? "NULL" : "\"{$session["atten"]}\"";
-    $session2["kidscatid"] = filter_var($session["kids"], FILTER_SANITIZE_NUMBER_INT);
-    $session2["signupreq"] = empty($session["signup"]) ? "0" : "1";
-    $session2["invitedguest"] = empty($session["invguest"]) ? "0" : "1";
-    $session2["roomsetid"] = filter_var($session["roomset"], FILTER_SANITIZE_NUMBER_INT);
-    $session2["pocketprogtext"] = mysqli_real_escape_string($linki, $session["pocketprogtext"]);
-    $session2["notesforpart"] = mysqli_real_escape_string($linki, $session["notesforpart"]);
-    $session2["servnotes"] = mysqli_real_escape_string($linki, $session["servnotes"]);
-    $session2["status"] = filter_var($session["status"], FILTER_SANITIZE_NUMBER_INT);
-    $session2["notesforprog"] = mysqli_real_escape_string($linki, $session["notesforprog"]);
-    $id = filter_var($session["sessionid"], FILTER_SANITIZE_NUMBER_INT);
+    $sessionf = filter_session(); // reads global $session array and returns sanitized copy
+    $id = $sessionf["id"];
 
     $query=<<<EOD
 UPDATE Sessions SET
-        trackid="{$session2["track"]}",
-        typeid="{$session2["type"]}",
-        divisionid="{$session2["divisionid"]}",
-        pubstatusid="{$session2["pubstatusid"]}",
-        languagestatusid="{$session2["languagestatusid"]}",
-        pubsno="{$session2["pubno"]}",
-        title="{$session2["title"]}",
-        secondtitle="{$session2["secondtitle"]}",
-        pocketprogtext="{$session2["pocketprogtext"]}",
-        progguiddesc="{$session2["progguiddesc"]}",
-        persppartinfo="{$session2["persppartinfo"]}",
-        duration="{$session2["duration"]}",
-        estatten={$session2["estatten"]},
-        kidscatid="{$session["kidscatid"]}",
-        signupreq={$session2["signupreq"]},
-        invitedguest={$session2["invitedguest"]},
-        roomsetid="{$session2["roomsetid"]}",
-        notesforpart="{$session2["notesforpart"]}",
-        servicenotes="{$session2["servnotes"]}",
-        statusid="{$session2["status"]}",
-        notesforprog="{$session2["notesforprog"]}"
+        trackid="{$sessionf["track"]}",
+        typeid="{$sessionf["type"]}",
+        divisionid="{$sessionf["divisionid"]}",
+        pubstatusid="{$sessionf["pubstatusid"]}",
+        languagestatusid="{$sessionf["languagestatusid"]}",
+        pubsno="{$sessionf["pubno"]}",
+        title="{$sessionf["title"]}",
+        secondtitle="{$sessionf["secondtitle"]}",
+        pocketprogtext="{$sessionf["pocketprogtext"]}",
+        progguiddesc="{$sessionf["progguiddesc"]}",
+        persppartinfo="{$sessionf["persppartinfo"]}",
+        duration="{$sessionf["duration"]}",
+        estatten={$sessionf["estatten"]},
+        kidscatid="{$sessionf["kidscatid"]}",
+        signupreq={$sessionf["signupreq"]},
+        invitedguest={$sessionf["invitedguest"]},
+        roomsetid="{$sessionf["roomsetid"]}",
+        notesforpart="{$sessionf["notesforpart"]}",
+        servicenotes="{$sessionf["servnotes"]}",
+        statusid="{$sessionf["status"]}",
+        notesforprog="{$sessionf["notesforprog"]}"
     WHERE
         sessionid = $id;
 EOD;
@@ -418,11 +391,10 @@ EOD;
     if (!mysqli_query_with_error_handling($query)) {
         return false;
     }
-    if (!empty($session["featdest"])) {
+    if (!empty($sessionf["features"])) {
         $query = "INSERT INTO SessionHasFeature (sessionid, featureid) VALUES ";
-        for ($i = 0 ; !empty($session["featdest"][$i]) ; $i++ ) {
-            $thisFeat = filter_var($session["featdest"][$i], FILTER_SANITIZE_NUMBER_INT);
-            $query .= "($id, $thisFeat),";
+        foreach ($sessionf["features"] as $feature) {
+            $query .= "($id, $feature),";
         }
         $query = substr($query, 0, -1) . ";"; // drop trailing comma
         if (!mysqli_query_with_error_handling($query)) {
@@ -433,11 +405,10 @@ EOD;
     if (!mysqli_query_with_error_handling($query)) {
         return false;
     }
-    if (!empty($session["servdest"])) {
+    if (!empty($sessionf["services"])) {
         $query = "INSERT INTO SessionHasService (sessionid, serviceid) VALUES ";
-        for ($i = 0 ; !empty($session["servdest"][$i]) ; $i++ ) {
-            $thisServ = filter_var($session["servdest"][$i], FILTER_SANITIZE_NUMBER_INT);
-            $query .= "($id, $thisServ),";
+        foreach ($sessionf["services"] as $service) {
+            $query .= "($id, $service),";
         }
         $query = substr($query, 0, -1) . ";"; // drop trailing comma
         if (!mysqli_query_with_error_handling($query)) {
@@ -448,11 +419,10 @@ EOD;
     if (!mysqli_query_with_error_handling($query)) {
         return false;
     }
-    if (!empty($session["pubchardest"])) {
+    if (!empty($sessionf["pubchars"])) {
         $query = "INSERT INTO SessionHasPubChar (sessionid, pubcharid) VALUES ";
-        for ($i = 0 ; !empty($session["pubchardest"][$i]) ; $i++ ) {
-            $thisPubChar = filter_var($session["pubchardest"][$i], FILTER_SANITIZE_NUMBER_INT);
-            $query .= "($id, $thisPubChar),";
+        foreach ($sessionf["pubchars"] as $pubchar) {
+            $query .= "($id, $pubchar),";
         }
         $query = substr($query, 0, -1) . ";"; // drop trailing comma
         if (!mysqli_query_with_error_handling($query)) {
@@ -485,74 +455,68 @@ function get_next_session_id() {
 // the tables Sessions, SessionHasFeature, and SessionHasService.
 //
 function insert_session() {
-    global $session, $linki;
-    $query = "INSERT INTO Sessions SET ";
-    $query .= "trackid=" . $session["track"] . ',';
-    $temp = $session["type"];
-    $query .= "typeid=" . (($temp == 0) ? "null" : $temp) . ", ";
-    $temp = $session["divisionid"];
-    $query .= "divisionid=" . (($temp == 0) ? "null" : $temp) . ", ";
-    $query .= "pubstatusid=" . $session["pubstatusid"] . ',';
-    $query .= "languagestatusid=" . $session["languagestatusid"] . ',';
-    $query .= "pubsno=\"" . mysql_real_escape_string($session["pubno"], $link) . '",';
-    $query .= "title=\"" . mysql_real_escape_string($session["title"], $link) . '",';
-    $query .= "secondtitle=\"" . mysql_real_escape_string($session["secondtitle"], $link) . '",';
-    $query .= "pocketprogtext=\"" . mysql_real_escape_string($session["pocketprogtext"], $link) . '",';
-    $query .= "progguiddesc=\"" . mysql_real_escape_string($session["progguiddesc"], $link) . '",';
-    $query .= "persppartinfo=\"" . mysql_real_escape_string($session["persppartinfo"], $link) . '",';
-    if (DURATION_IN_MINUTES == "TRUE") {
-        $query .= "duration=\"" . conv_min2hrsmin($session["duration"]) . "\", ";
-    } else {
-        $query .= "duration=\"" . mysql_real_escape_string($session["duration"], $link) . "\", ";
-    }
-    $query .= "estatten=" . ($session["atten"] != "" ? $session["atten"] : "null") . ',';
-    $query .= "kidscatid=" . $session["kids"] . ',';
-    $query .= "signupreq=";
-    if ($session["signup"]) {
-        $query .= "1,";
-    } else {
-        $query .= "0,";
-    }
-    $temp = $session["roomset"];
-    $query .= "roomsetid=" . (($temp == 0) ? "null" : $temp) . ", ";
-    $query .= "notesforpart=\"" . mysql_real_escape_string($session["notesforpart"], $link) . '",';
-    $query .= "servicenotes=\"" . mysql_real_escape_string($session["servnotes"], $link) . '",';
-    $query .= "statusid=" . $session["status"] . ',';
-    $query .= "notesforprog=\"" . mysql_real_escape_string($session["notesforprog"], $link) . '",';
-    $query .= "warnings=0,invitedguest="; // warnings db field not editable by form
-    if ($session["invguest"]) {
-        $query .= "1";
-    } else {
-        $query .= "0";
-    }
-    $result = mysql_query($query, $link);
-    if (!$result) {
-        $message_error = mysql_error($link);
-        return $result;
-    }
-    $id = mysql_insert_id($link);
-    if ($session["featdest"] != "") {
-        for ($i = 0; $session["featdest"][$i] != ""; $i++) {
-            $query = "INSERT INTO SessionHasFeature SET sessionid=" . $id . ", featureid=";
-            $query .= $session["featdest"][$i];
-            $result = mysql_query($query, $link);
-        }
-    }
-    if ($session["servdest"] != "") {
-        for ($i = 0; $session["servdest"][$i] != ""; $i++) {
-            $query = "INSERT INTO SessionHasService SET sessionid=" . $id . ", serviceid=";
-            $query .= $session["servdest"][$i];
-            $result = mysql_query($query, $link);
-        }
-    }
-    if ($session["pubchardest"] != "") {
-        for ($i = 0; $session["pubchardest"][$i] != ""; $i++) {
-            $query = "INSERT INTO SessionHasPubChar SET sessionid=" . $id . ", pubcharid=";
-            $query .= $session["pubchardest"][$i];
-            $result = mysql_query($query, $link);
-        }
-    }
+    global $linki;
+    $sessionf = filter_session(); // reads global $session array and returns sanitized copy
+    $id = $sessionf["id"];
 
+    $query=<<<EOD
+INSERT INTO Sessions SET
+        trackid="{$sessionf["track"]}",
+        typeid="{$sessionf["type"]}",
+        divisionid="{$sessionf["divisionid"]}",
+        pubstatusid="{$sessionf["pubstatusid"]}",
+        languagestatusid="{$sessionf["languagestatusid"]}",
+        pubsno="{$sessionf["pubno"]}",
+        title="{$sessionf["title"]}",
+        secondtitle="{$sessionf["secondtitle"]}",
+        pocketprogtext="{$sessionf["pocketprogtext"]}",
+        progguiddesc="{$sessionf["progguiddesc"]}",
+        persppartinfo="{$sessionf["persppartinfo"]}",
+        duration="{$sessionf["duration"]}",
+        estatten={$sessionf["estatten"]},
+        kidscatid="{$sessionf["kidscatid"]}",
+        signupreq={$sessionf["signupreq"]},
+        invitedguest={$sessionf["invitedguest"]},
+        roomsetid="{$sessionf["roomsetid"]}",
+        notesforpart="{$sessionf["notesforpart"]}",
+        servicenotes="{$sessionf["servnotes"]}",
+        statusid="{$sessionf["status"]}",
+        notesforprog="{$sessionf["notesforprog"]}"
+EOD;
+    if (!mysqli_query_with_error_handling($query)) {
+        return false;
+    }
+    $id = mysqli_insert_id($linki);
+    if (!empty($sessionf["features"])) {
+        $query = "INSERT INTO SessionHasFeature (sessionid, featureid) VALUES ";
+        foreach ($sessionf["features"] as $feature) {
+            $query .= "($id, $feature),";
+        }
+        $query = substr($query, 0, -1) . ";"; // drop trailing comma
+        if (!mysqli_query_with_error_handling($query)) {
+            return false;
+        }
+    }
+    if (!empty($sessionf["services"])) {
+        $query = "INSERT INTO SessionHasService (sessionid, serviceid) VALUES ";
+        foreach ($sessionf["services"] as $service) {
+            $query .= "($id, $service),";
+        }
+        $query = substr($query, 0, -1) . ";"; // drop trailing comma
+        if (!mysqli_query_with_error_handling($query)) {
+            return false;
+        }
+    }
+    if (!empty($sessionf["pubchars"])) {
+        $query = "INSERT INTO SessionHasPubChar (sessionid, pubcharid) VALUES ";
+        foreach ($sessionf["pubchars"] as $pubchar) {
+            $query .= "($id, $pubchar),";
+        }
+        $query = substr($query, 0, -1) . ";"; // drop trailing comma
+        if (!mysqli_query_with_error_handling($query)) {
+            return false;
+        }
+    }
     return $id;
 }
 
@@ -578,7 +542,7 @@ function filter_session() {
     } else {
         $session2["duration"] = mysqli_real_escape_string($linki, $session["duration"]);
     }
-    $session2["estatten"] = empty($session["atten"]) ? "NULL" : "\"{$session["atten"]}\"";
+    $session2["estatten"] = empty($session["atten"]) ? "NULL" : strval(filter_var($session["atten"], FILTER_SANITIZE_NUMBER_INT));
     $session2["kidscatid"] = filter_var($session["kids"], FILTER_SANITIZE_NUMBER_INT);
     $session2["signupreq"] = empty($session["signup"]) ? "0" : "1";
     $session2["invitedguest"] = empty($session["invguest"]) ? "0" : "1";
@@ -613,92 +577,94 @@ function filter_session() {
 }
 
 // Function retrieve_session_from_db()
-// Reads Sessions, SessionHasFeature, and SessionHasService tables
-// from db to populate global array $session.
+// Reads Sessions, SessionHasFeature, SessionHasService and SessionHasPubChar tables
+// from db and returns array $session or FALSE.
+// If necessary, populates global $message_error
 //
 function retrieve_session_from_db($sessionid) {
-    global $session;
-    global $link,$message2;
-    $query= <<<EOD
-select
+    global $message_error;
+    $session = array();
+    $query = <<<EOD
+SELECT
         sessionid, trackid, typeid, divisionid, pubstatusid, languagestatusid, pubsno,
         title, secondtitle, pocketprogtext, progguiddesc, persppartinfo, duration,
         estatten, kidscatid, signupreq, roomsetid, notesforpart, servicenotes,
         statusid, notesforprog, warnings, invitedguest, ts
-    from
+    FROM
         Sessions
-    where
-        sessionid=
+    WHERE
+        sessionid = $sessionid;
 EOD;
-    $query.=$sessionid;
-    $result=mysql_query($query,$link);
-    if (!$result) {
-        $message2=$query."<BR>\n".mysql_error($link);
-        return (-3);
-        }
-    $rows=mysql_num_rows($result);
-    if ($rows!=1) {
-        $message2=$rows;
-        return (-2);
-        }
-    $sessionarray=mysql_fetch_array($result, MYSQL_ASSOC);
-    $session["sessionid"]=$sessionarray["sessionid"];
-    $session["track"]=$sessionarray["trackid"];
-    $session["type"]=$sessionarray["typeid"];
-    $session["divisionid"]=$sessionarray["divisionid"];
-    $session["pubstatusid"]=$sessionarray["pubstatusid"];
-    $session["languagestatusid"]=$sessionarray["languagestatusid"];
-    $session["pubno"]=$sessionarray["pubsno"];
-    $session["title"]=$sessionarray["title"];
-    $session["secondtitle"]=$sessionarray["secondtitle"];
-    $session["pocketprogtext"]=$sessionarray["pocketprogtext"];
-    $session["progguiddesc"]=$sessionarray["progguiddesc"];
-    $session["persppartinfo"]=$sessionarray["persppartinfo"];
-    $timearray=parse_mysql_time_hours($sessionarray["duration"]);
-    if (DURATION_IN_MINUTES=="TRUE") {
-            $session["duration"]=" ".strval(60*$timearray["hours"]+$timearray["minutes"]);
-            }
-        else {
-            $session["duration"]=" ".$timearray["hours"].":".sprintf("%02d",$timearray["minutes"]);
-            }
-    $session["atten"]=$sessionarray["estatten"];
-    $session["kids"]=$sessionarray["kidscatid"];
-    $session["signup"]=$sessionarray["signupreq"];
-    $session["roomset"]=$sessionarray["roomsetid"];
-    $session["notesforpart"]=$sessionarray["notesforpart"];
-    $session["servnotes"]=$sessionarray["servicenotes"];
-    $session["status"]=$sessionarray["statusid"];
-    $session["notesforprog"]=$sessionarray["notesforprog"];
-    $session["invguest"]=$sessionarray["invitedguest"];
-    $result=mysql_query("SELECT featureid FROM SessionHasFeature where sessionid=".$sessionid,$link);
-    if (!$result) {
-        $message2=mysql_error($link);
-        return (-3);
-        }
-    unset($session["featdest"]);
-    while ($row=mysql_fetch_array($result, MYSQL_NUM)) {
-        $session["featdest"][]=$row[0];
-        }
-    $result=mysql_query("SELECT serviceid FROM SessionHasService where sessionid=".$sessionid,$link);
-    if (!$result) {
-        $message2=mysql_error($link);
-        return (-3);
-        }
-    unset($session["servdest"]);
-    while ($row=mysql_fetch_array($result, MYSQL_NUM)) {
-        $session["servdest"][]=$row[0];
-        }
-    $result=mysql_query("SELECT pubcharid FROM SessionHasPubChar where sessionid=".$sessionid,$link);
-    if (!$result) {
-        $message2=mysql_error($link);
-        return (-3);
-        }
-    unset($session["pubchardest"]);
-    while ($row=mysql_fetch_array($result, MYSQL_NUM)) {
-        $session["pubchardest"][]=$row[0];
-        }
-    return (37);
+    if (!$result = mysqli_query_with_error_handling($query)) {
+        $message_error = "Error retrieving record from database. $message_error";
+        return (FALSE);
     }
+    $rows = mysqli_num_rows($result);
+    if ($rows != 1) {
+        $message_error = "Session record with id = $sessionid not found (or error with Session primary key). $message_error";
+        return (FALSE);
+    }
+    $sessionarray = mysqli_fetch_array($result, MYSQLI_ASSOC);
+    $session["sessionid"] = $sessionarray["sessionid"];
+    $session["track"] = $sessionarray["trackid"];
+    $session["type"] = $sessionarray["typeid"];
+    $session["divisionid"] = $sessionarray["divisionid"];
+    $session["pubstatusid"] = $sessionarray["pubstatusid"];
+    $session["languagestatusid"] = $sessionarray["languagestatusid"];
+    $session["pubno"] = $sessionarray["pubsno"];
+    $session["title"] = $sessionarray["title"];
+    $session["secondtitle"] = $sessionarray["secondtitle"];
+    $session["pocketprogtext"] = $sessionarray["pocketprogtext"];
+    $session["progguiddesc"] = $sessionarray["progguiddesc"];
+    $session["persppartinfo"] = $sessionarray["persppartinfo"];
+    $timearray = parse_mysql_time_hours($sessionarray["duration"]);
+    if (DURATION_IN_MINUTES == "TRUE") {
+        $session["duration"] = " " . strval(60 * $timearray["hours"] + $timearray["minutes"]);
+    } else {
+        $session["duration"] = " " . $timearray["hours"] . ":" . sprintf("%02d", $timearray["minutes"]);
+    }
+    $session["atten"] = $sessionarray["estatten"];
+    $session["kids"] = $sessionarray["kidscatid"];
+    $session["signup"] = $sessionarray["signupreq"];
+    $session["roomset"] = $sessionarray["roomsetid"];
+    $session["notesforpart"] = $sessionarray["notesforpart"];
+    $session["servnotes"] = $sessionarray["servicenotes"];
+    $session["status"] = $sessionarray["statusid"];
+    $session["notesforprog"] = $sessionarray["notesforprog"];
+    $session["invguest"] = $sessionarray["invitedguest"];
+    mysqli_free_result($result);
+    $query = "SELECT featureid FROM SessionHasFeature WHERE sessionid = $sessionid;";
+    if (!$result = mysqli_query_with_error_handling($query)) {
+        $message_error = "Error retrieving record from database. $message_error";
+        return (FALSE);
+    }
+    $session["featdest"] = array();
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        $session["featdest"][] = $row[0];
+    }
+    mysqli_free_result($result);
+    $query = "SELECT serviceid FROM SessionHasService WHERE sessionid = $sessionid;";
+    if (!$result = mysqli_query_with_error_handling($query)) {
+        $message_error = "Error retrieving record from database. $message_error";
+        return (FALSE);
+    }
+    $session["servdest"] = array();
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        $session["servdest"][] = $row[0];
+    }
+    mysqli_free_result($result);
+    $query = "SELECT pubcharid FROM SessionHasPubChar WHERE sessionid = $sessionid;";
+    if (!$result = mysqli_query_with_error_handling($query)) {
+        $message_error = "Error retrieving record from database. $message_error";
+        return (FALSE);
+    }
+    $session["pubchardest"] = array();
+    while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
+        $session["pubchardest"][] = $row[0];
+    }
+    mysqli_free_result($result);
+    return ($session);
+}
 
 // Function isLoggedIn()
 // Reads the session variables and checks password in db to see if user is
@@ -712,36 +678,37 @@ EOD;
 /* check login script, included in db_connect.php. */
 
 function isLoggedIn() {
-    global $link,$message2;
-
+    global $message_error, $message2;
+    $message2 = "";
+    $message_error = "";
     if (!isset($_SESSION['badgeid']) || !isset($_SESSION['password'])) {
         return false;
-        }
+    }
 
-// remember, $_SESSION['password'] will be encrypted. $_SESSION['badgeid'] should already be escaped
-
-    $result=mysql_query("SELECT password FROM Participants where badgeid='".$_SESSION['badgeid']."'",$link);
-    if (!$result) {
-        $message2=mysql_error($link);
+    // remember, $_SESSION['password'] will be encrypted. $_SESSION['badgeid'] should already be escaped
+    $query = "SELECT password FROM Participants WHERE badgeid = '{$_SESSION['badgeid']}';";
+    if (!$result = mysqli_query_with_error_handling($query)) {
         unset($_SESSION['badgeid']);
         unset($_SESSION['password']);
-// kill incorrect session variables.
-        return (-3);
-        }
+        // kill incorrect session variables.
+        return (""); //falsy
+    }
 
-    if (mysql_num_rows($result)!=1) {
+    if (mysqli_num_rows($result) != 1) {
         unset($_SESSION['badgeid']);
         unset($_SESSION['password']);
-// kill incorrect session variables.
-        $message2="Incorrect number of rows returned when fetching password from db.";
-        return (-1);
-        }
+        // kill incorrect session variables.
+        $message_error = "Incorrect number of rows returned when fetching password from db. $message_error";
+        return (""); //falsy
+    }
 
-    $row=mysql_fetch_array($result, MYSQL_NUM);
+    $row = mysqli_fetch_array($result, MYSQLI_NUM);
+    mysqli_free_result($result);
+
     $db_pass = $row[0];
 
-// now we have encrypted pass from DB in
-//$db_pass['password'], stripslashes() just incase:
+    // now we have encrypted pass from DB in
+    //$db_pass['password'], stripslashes() just incase:
 
     $db_pass = stripslashes($db_pass);
     $_SESSION['password'] = stripslashes($_SESSION['password']);
@@ -749,93 +716,88 @@ function isLoggedIn() {
     //echo $db_pass."<BR>";
     //echo $_SESSION['password']."<BR>";
 
-//compare:
+    //compare:
 
-    if($_SESSION['password'] != $db_pass) {
-// kill incorrect session variables.
-            unset($_SESSION['badgeid']);
-            unset($_SESSION['password']);
-            $message2="Incorrect userid or password.";
-            return (false);
-            }
-// valid password for username
-        else {
-//          $i=set_permission_set($_SESSION['badgeid']);
-//          should now be part of session variables
-//            if ($i!=0) {
-//                error_log("Zambia: permission_set error $i\n");
-//                }
-            return(true); // they have correct info
-            }           // in session variables.
+    if ($_SESSION['password'] != $db_pass) {
+    // kill incorrect session variables.
+        unset($_SESSION['badgeid']);
+        unset($_SESSION['password']);
+        $message2 = "Incorrect userid or password.";
+        return (false);
+    } else {
+        return (true);
     }
+}
 
 
 // Function retrieve_participant_from_db()
-// Reads Particpants tables
-// from db to populate global array $participant.
+// Reads Partic-pants tables
+// from db and returns array $participant.
 //
-function retrieve_participant_from_db($badgeid) {
-    global $participant;
-    global $link,$message2;
-    $result=mysql_query("SELECT pubsname, password, bestway, interested, bio, share_email FROM Participants where badgeid='$badgeid'",$link);
-    if (!$result) {
-        $message2=mysql_error($link);
-        return (-3);
-        }
-    $rows=mysql_num_rows($result);
-    if ($rows!=1) {
-        $message2="Participant rows retrieved: $rows ";
-        return (-2);
-        }
-    $participant=mysql_fetch_array($result, MYSQL_ASSOC);
-    return (0);
+function retrieveParticipant($badgeid) {
+    global $message_error;
+    if (empty($message_error)) {
+        $message_error = "";
     }
+    $query = <<<EOD
+SELECT
+        pubsname, password, bestway, interested, bio, share_email
+    FROM
+        Participants
+    WHERE
+        badgeid="$badgeid";
+EOD;
+    if ($result = mysqli_query_with_error_handling($query)) {
+        return (FALSE);
+    }
+    $rows = mysqli_num_rows($result);
+    if ($rows != 1) {
+        $message_error = "Participant rows retrieved: $rows $message_error";
+        return (FALSE);
+    }
+    $participant_array = mysqli_fetch_array($result, MYSQLI_ASSOC);
+    mysqli_free_result($result);
+    return ($participant_array);
+}
+
 // Function getCongoData()
 // Reads CongoDump table
 // from db to populate global array $congoinfo.
 // also calls retrieve_participant_from_db() to populate
 // global array $participant
 //
-function getCongoData($badgeid) {
-    global $message_error,$message2,$congoinfo,$link,$participant;
-    $query= <<<EOD
+function retrieveFullParticipant($badgeid) {
+    global $message_error, $message2, $congoinfo, $link, $participant;
+    if (empty($message_error)) {
+        $message_error = "";
+    }
+    $query = <<<EOD
 SELECT
-        badgeid,
-		firstname,
-		lastname,
-		badgename,
-		phone,
-		email,
-		postaddress1,
-		postaddress2,
-		postcity,
-		poststate,
-		postzip,
-		postcountry
+        badgeid, firstname, lastname, badgename, phone, email, postaddress1,
+		postaddress2, postcity, poststate, postzip, postcountry
     FROM
         CongoDump
     WHERE
         badgeid = "$badgeid";
 EOD;
-    $result=mysql_query($query,$link);
-    if (!$result) {
-        $message_error=mysql_error($link)."\n<br>Database Error.<br>No further execution possible.";
-        return(-1);
-        };
-    $rows=mysql_num_rows($result);
-    if ($rows!=1) {
-        $message_error=$rows." rows returned for badgeid when 1 expected.<br>Database Error.<br>No further execution possible.";
-        return(-1);
-        };
-    if (retrieve_participant_from_db($badgeid)!=0) {
-        $message_error=$message2."<br>No further execution possible.";
-        return(-1);
-        };
-	$participant["chpw"] = ($participant["password"] == "4cb9c8a8048fd02294477fcb1a41191a");
-    $participant["password"]="";
-    $congoinfo=mysql_fetch_array($result, MYSQL_ASSOC);
-    return(0);
-    }
+    if ($result = mysqli_query_with_error_handling($query)) {
+        return (FALSE);
+    };
+    $rows = mysqli_num_rows($result);
+    if ($rows != 1) {
+        $message_error = "$rows rows returned for badgeid: $badgeid when 1 expected. $message_error";
+        return (FALSE);
+    };
+    if (!$participant_array = retrieveParticipant($badgeid)) {
+        return (FALSE);
+    };
+    $participant_array["chpw"] = ($participant_array["password"] == "4cb9c8a8048fd02294477fcb1a41191a");
+    $participant_array["password"] = "";
+    $participant_array = array_merge($participant_array, mysqli_fetch_array($result, MYSQLI_ASSOC));
+    mysqli_free_result($result);
+    return ($participant_array);
+}
+
 // Function retrieve_participantAvailability_from_db()
 // Reads ParticipantAvailability and ParticipantAvailabilityTimes tables
 // from db to populate global array $partAvail.

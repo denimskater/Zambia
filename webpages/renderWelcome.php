@@ -1,26 +1,28 @@
 <?php
-global $participant,$message,$message_error,$message2,$congoinfo;
+//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+global $message, $message_error, $message2, $congoinfo;
 //error_log("Zambia: Reached renderWelcome.php"); 
-$title="Participant View";
+$title = "Participant View";
 require_once('PartCommonCode.php');
 participant_header($title);
-getCongoData($badgeid); 
-if ($message_error!="") { 
+$participant = getCongoData($badgeid);
+if ($message_error != "") {
     echo "<P class=\"alert alert-error\">$message_error</P>\n";
-    }
-if ($message!="") {
+}
+if ($message != "") {
     echo "<P class=\"alert alert-success\">$message</P>\n";
-    }
-$chint=($participant["interested"]==0);
+}
+$chint = ($participant["interested"] == 0);
 if (may_I('postcon')) { ?>
-    <p>Thank you for your participation in <?php echo CON_NAME;?>.  With your help it was a great con.  We look forward to your participation again next year.</p>
+    <p>Thank you for your participation in <?php echo CON_NAME; ?>. With your help it was a great con. We look forward
+        to your participation again next year.</p>
     <p>We will post instructions for participating in brainstorming for next year soon.</p>
-    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--Arisia Program and Events Committees</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--<?php echo CON_NAME; ?> Program and Events Committees</p>
     <?php
     participant_footer();
     exit();
-    }
-	?>
+}
+?>
     
 <div class="row-fluid">
 	<div class="span12">
