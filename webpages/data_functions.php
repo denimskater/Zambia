@@ -1,5 +1,4 @@
 <?php
-// $Header$
 //	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
 function convertStartTimeToUnits($startTimeHour, $startTimeMin) {
 	$startTimeUnits = $startTimeHour * 2;
@@ -60,7 +59,41 @@ function conv_min2hrsmin($mininput) {
     return (sprintf("%02d:%02d:00", $hrs, $minr));
 }
 
-//
+// Function getInt("name", default)
+// gets a parameter from $_GET[] or $_POST[] of name
+// and confirms it is an integer.
+// Safe from referencing nonexisting array index
+function getInt($name, $default = false) {
+    if (isset($_GET[$name])) {
+        $int = $_GET[$name];
+    } elseif (isset($_POST[$name])) {
+        $int = $_POST[$name];
+    } else {
+        return $default;
+    }
+    if ($default === false) {
+        return (filter_var($int, FILTER_SANITIZE_NUMBER_INT));
+    } else {
+        $t = filter_var($int, FILTER_SANITIZE_NUMBER_INT);
+        return $t == "" ? $default : $t;
+    }
+}
+
+// Function getString("name")
+// gets a parameter from $_GET[] or $_POST[] of name
+// and strips slashes
+// Safe from referencing nonexisting array index
+function getString($name) {
+    if (isset($_GET[$name])) {
+        $string = $_GET[$name];
+    } elseif (isset($_POST[$name])) {
+        $string = $_POST[$name];
+    } else {
+        return "";
+    }
+    return stripslashes($string);
+}
+
 // Function stripfancy()
 // returns a string with many non-7-bit ASCII characters
 // removed from input string and replaced with similar
@@ -69,22 +102,6 @@ function conv_min2hrsmin($mininput) {
 // set constants stripfancy_from and stripfancy_to in
 // file db_name.php to configure
 //
-// Function getInt("name")
-// gets a parameter from $_GET[] or $_POST[] of name
-// and confirms it is an integer.
-function getInt($name) {
-    if (isset($_GET[$name])) {
-        $int = $_GET[$name];
-    } else {
-        if (isset($_POST[$name])) {
-            $int = $_POST[$name];
-        } else {
-            return false;
-        }
-    }
-    return (filter_var($int, FILTER_SANITIZE_NUMBER_INT));
-}
-
 function stripfancy($input) {
     if (stripfancy_from) {
         return (strtr($input, stripfancy_from, stripfancy_to));
@@ -116,22 +133,22 @@ function get_nameemail_from_post(&$name, &$email) {
 // $_POST["availstarttime_$i"], $_POST["availendtime_$i"] are indexes into Times table, 0 for unset; 
 //
 function get_participant_availability_from_post() {
-    global $partAvail;
+    $partAvail = array();
     // for numeric fields in ParticipantAvailability--convert to 0 if blank
-    $partAvail["maxprog"] = ($_POST["maxprog"] == "") ? 0 : $_POST["maxprog"];
+    $partAvail["maxprog"] = getInt("maxprog", 0);
     for ($i = 1; $i <= CON_NUM_DAYS; $i++) {
-        $partAvail["maxprogday$i"] = ($_POST["maxprogday$i"] != "") ? $_POST["maxprogday$i"] : 0;
+        $partAvail["maxprogday$i"] = getInt("maxprogday$i", 0);
     }
     for ($i = 1; $i <= AVAILABILITY_ROWS; $i++) {
-        $x1 = $partAvail["availstartday_$i"] = $_POST["availstartday_$i"];
-        $x2 = $partAvail["availstarttime_$i"] = $_POST["availstarttime_$i"];
-        $x3 = $partAvail["availendday_$i"] = $_POST["availendday_$i"];
-        $x4 = $partAvail["availendtime_$i"] = $_POST["availendtime_$i"];
-        //error_log("Zambia, get: $i, $x1, $x2, $x3, $x4");
+        $partAvail["availstartday_$i"] = getInt("availstartday_$i", 0);
+        $partAvail["availstarttime_$i"] = getInt("availstarttime_$i", 0);
+        $partAvail["availendday_$i"] = getInt("availendday_$i", 0);
+        $partAvail["availendtime_$i"] = getInt("availendtime_$i", 0);
     }
-    $partAvail["preventconflict"] = stripslashes($_POST["preventconflict"]);
-    $partAvail["numkidsfasttrack"] = ($_POST["numkidsfasttrack"] == "") ? 0 : $_POST["numkidsfasttrack"] + 0;
-    $partAvail["otherconstraints"] = stripslashes($_POST["otherconstraints"]);
+    $partAvail["preventconflict"] = getString("preventconflict");
+    $partAvail["numkidsfasttrack"] = getInt("numkidsfasttrack", 0);
+    $partAvail["otherconstraints"] = getString("otherconstraints");
+    return $partAvail;
 }
 
 // Function get_session_from_post()

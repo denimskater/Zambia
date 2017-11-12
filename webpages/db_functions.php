@@ -55,13 +55,13 @@ function log_query_error($query, $error_message, $ajax) {
     error_log($query);
     error_log($error_message);
     if ($ajax) {
-        echo "<span class=\"alert\">";
+        echo "<span class=\"alert alert-error\">";
         echo "Error updating or querying database. ";
         echo $query . " ";
         echo $error_message;
         echo "</span>";
     } else {
-        echo "<p class=\"alert alert - error\">";
+        echo "<p class=\"alert alert-error\">";
         echo "Error updating or querying database.<br>\n";
         echo $query . "<br>\n";
         echo $error_message;
@@ -69,6 +69,9 @@ function log_query_error($query, $error_message, $ajax) {
     }
 }
 
+/**
+ * @deprecated
+ */
 function mysql_query_exit_on_error($query) {
 	return mysql_query_with_error_handling($query, true);
 }
@@ -77,6 +80,9 @@ function mysqli_query_exit_on_error($query) {
     return mysqli_query_with_error_handling($query, true);
 }
 
+/**
+ * @deprecated
+ */
 function mysql_query_with_error_handling($query, $exit_on_error = false, $ajax = false) {
     global $link, $message_error;
     $result = mysql_query($query, $link);
@@ -119,6 +125,9 @@ function exitWithWrapup($ajax) {
     exit(-1);
 };
 
+/**
+ * @deprecated
+ */
 function rollback() {
     mysql_query_with_error_handling("ROLLBACK;");
 }
@@ -158,9 +167,9 @@ function prepare_db() {
     $link = mysql_connect(DBHOSTNAME,DBUSERID,DBPASSWORD);
     if ($link === false)
 		return (false);
-	if (!mysql_select_db(DBDB,$link))
+	if (!mysql_select_db(DBDB, $link))
 		return (false);
-    if (!mysql_set_charset("utf8",$link))
+    if (!mysql_set_charset("utf8", $link))
         return (false);
     $linki = mysqli_connect(DBHOSTNAME, DBUSERID, DBPASSWORD, DBDB);
     if ($linki === false)
@@ -731,7 +740,7 @@ function isLoggedIn() {
 
 
 // Function retrieve_participant_from_db()
-// Reads Partic-pants tables
+// Reads Participants tables
 // from db and returns array $participant.
 //
 function retrieveParticipant($badgeid) {
@@ -767,7 +776,7 @@ EOD;
 // global array $participant
 //
 function retrieveFullParticipant($badgeid) {
-    global $message_error, $message2, $congoinfo, $link, $participant;
+    global $message_error;
     if (empty($message_error)) {
         $message_error = "";
     }
@@ -801,135 +810,139 @@ EOD;
 // Function retrieve_participantAvailability_from_db()
 // Reads ParticipantAvailability and ParticipantAvailabilityTimes tables
 // from db to populate global array $partAvail.
-// Returns 0: success; -1: badgeid not found; -2: badgeid matches >1 row;
-//         -3: other error ($message_error populated)
+// Returns $participantAvailability array or false if error
 //
-function retrieve_participantAvailability_from_db($badgeid) {
-    global $partAvail;
-    global $link,$message2,$message_error;
-    $query= <<<EOD
-Select badgeid, maxprog, preventconflict, otherconstraints, numkidsfasttrack FROM ParticipantAvailability
+function retrieve_participantAvailability_from_db($badgeid, $exit_on_error = false) {
+    global $message_error;
+    $query = <<<EOD
+SELECT
+        badgeid, maxprog, preventconflict, otherconstraints, numkidsfasttrack
+    FROM
+        ParticipantAvailability
+    WHERE
+        badgeid = "$badgeid";
 EOD;
-    $query.=" where badgeid=\"$badgeid\"";
-    $result=mysql_query($query,$link);
-    if (!$result) {
-        $message_error=$query."<BR>\n".mysql_error($link);
-        return (-3);
-        }
-    $rows=mysql_num_rows($result);
-    if ($rows==0) {
-        return (-1);
-        }
-    if ($rows!=1) {
-        $message_error=$query."<BR>\n returned $rows rows.";
-        return (-2);
-        }
-    $partAvailarray=mysql_fetch_array($result, MYSQL_ASSOC);
-    $partAvail["badgeid"]=$partAvailarray["badgeid"];
-    $partAvail["maxprog"]=$partAvailarray["maxprog"];
-    $partAvail["preventconflict"]=$partAvailarray["preventconflict"];
-    $partAvail["otherconstraints"]=$partAvailarray["otherconstraints"];
-    $partAvail["numkidsfasttrack"]=$partAvailarray["numkidsfasttrack"];
-
-    if (CON_NUM_DAYS>1) {
-        $query="SELECT badgeid, day, maxprog FROM ParticipantAvailabilityDays where badgeid=\"$badgeid\"";
-        $result=mysql_query($query,$link);
-        if (!$result) {
-            $message_error=$query."<BR>\n".mysql_error($link);
-            return (-3);
-            }
-        for ($i=1; $i<=CON_NUM_DAYS; $i++) {
-            unset($partAvail["maxprogday$i"]);
-            }
-        if (mysql_num_rows($result)>0) {
-            while ($row=mysql_fetch_array($result, MYSQL_ASSOC)) {
-                $i=$row["day"];
-                $partAvail["maxprogday$i"]=$row["maxprog"];
-                }
-            }
-        }
-    $query= <<<EOD
-SELECT badgeid, availabilitynum, DATE_FORMAT(starttime,'%T') AS starttime, 
-	DATE_FORMAT(endtime,'%T') AS endtime FROM ParticipantAvailabilityTimes
-	WHERE badgeid="$badgeid" ORDER BY starttime;
-EOD;
-    $result=mysql_query($query,$link);
-    if (!$result) {
-        $message_error=$query."<BR>\n".mysql_error($link);
-        return (-3);
-        }
-    for ($i=1; $i<=AVAILABILITY_ROWS; $i++) {
-        unset($partAvail["starttimestamp_$i"]);
-        unset($partAvail["endtimestamp_$i"]);
-        }
-    $i=1;
-    while ($row=mysql_fetch_array($result, MYSQL_ASSOC)) {
-        $partAvail["starttimestamp_$i"]=$row["starttime"];
-        $partAvail["endtimestamp_$i"]=$row["endtime"];
-        $i++;
-        }
-    return (0);
+    if (!$result = mysqli_query_with_error_handling($query, $exit_on_error)) {
+        return (false);
     }
-//
+    $rows = mysqli_num_rows($result);
+    if ($rows != 1) {
+        $message_error = "Found $rows rows for participant with badgeid:$badgeid.  Expected 1."
+        log_query_error($query, $message_error, false);
+        if ($exit_on_error) {
+            exitWithWrapup(false); // will exit script
+        }
+        return (false);
+    }
+    $participantAvailability = mysqli_fetch_array($result, MYSQLI_ASSOC);
+    mysqli_free_result($result);
+
+    if (CON_NUM_DAYS > 1) {
+        $query = "SELECT badgeid, day, maxprog FROM ParticipantAvailabilityDays where badgeid=\"$badgeid\";";
+        if (!$result = mysqli_query_with_error_handling($query, $exit_on_error)) {
+            return (false);
+        }
+        if (mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+                $i = $row["day"];
+                $participantAvailability["maxprogday$i"] = $row["maxprog"];
+            }
+        }
+        mysqli_free_result($result);
+    }
+    $query = <<<EOD
+SELECT
+        badgeid, availabilitynum, TIME_FORMAT(starttime, '%T') AS starttime, 
+	    TIME_FORMAT(endtime, '%T') AS endtime
+    FROM
+        ParticipantAvailabilityTimes
+	WHERE
+	    badgeid="$badgeid"
+    ORDER BY
+        starttime;
+EOD;
+    if (!$result = mysqli_query_with_error_handling($query, $exit_on_error)) {
+        return (false);
+    }
+    $i = 1;
+    while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+        $participantAvailability["starttimestamp_$i"] = $row["starttime"];
+        $participantAvailability["endtimestamp_$i"] = $row["endtime"];
+        $i++;
+    }
+    return ($participantAvailability);
+}
+
 // Function set_permission_set($badgeid)
 // Performs complicated join to get the set of permission atoms available to the user
 // Stores them in global variable $permission_set
 //
 function set_permission_set($badgeid) {
-    global $link;
-    
 // First do simple permissions
-    $_SESSION['permission_set']="";
-    $query= <<<EOD
-    Select distinct permatomtag from PermissionAtoms as PA, Phases as PH,
-    PermissionRoles as PR, UserHasPermissionRole as UHPR, Permissions P where
-    ((UHPR.badgeid='$badgeid' and UHPR.permroleid = P.permroleid)
-        or P.badgeid='$badgeid' ) and
-    (P.phaseid is null or (P.phaseid = PH.phaseid and PH.current = TRUE)) and
-    P.permatomid = PA.permatomid
+    $_SESSION['permission_set'] = array();
+    $query = <<<EOD
+SELECT DISTINCT
+        permatomtag
+    FROM
+        PermissionAtoms PA
+        JOIN Permissions P USING (permatomid),
+        Phases PH,
+        PermissionRoles PR,
+        UserHasPermissionRole UHPR
+    WHERE
+            (   (UHPR.badgeid='$badgeid' AND UHPR.permroleid = P.permroleid)
+              OR P.badgeid='$badgeid' )
+        AND
+            (P.phaseid IS NULL
+             OR (P.phaseid = PH.phaseid AND PH.current = TRUE));
 EOD;
-    $result=mysql_query($query,$link);
-//    error_log("set_permission_set query:  ".$query);
-    if (!$result) {
-        $message_error=$query." \n ".mysql_error($link)." \n <BR>Database Error.<BR>No further execution possible.";
-        error_log("Zambia: ".$message_error);
-        return(-1);
-        };
-    $rows=mysql_num_rows($result);
-    if ($rows==0) {
-        return(0);
-        };
-    for ($i=0; $i<$rows; $i++) {
-        $onerow=mysql_fetch_array($result, MYSQL_BOTH);
-        $_SESSION['permission_set'][]=$onerow[0];
-        };
-// Second, do <<specific>> permissions
-    $_SESSION['permission_set_specific']="";
-    $query= <<<EOD
-    Select distinct permatomtag, elementid from PermissionAtoms as PA, Phases as PH,
-    PermissionRoles as PR, UserHasPermissionRole as UHPR, Permissions P where
-    ((UHPR.badgeid='$badgeid' and UHPR.permroleid = P.permroleid)
-        or P.badgeid='$badgeid' ) and
-    (P.phaseid is null or (P.phaseid = PH.phaseid and PH.current = TRUE)) and
-    P.permatomid = PA.permatomid and
-    PA.elementid is not null
-EOD;
-    $result=mysql_query($query,$link);
-    if (!$result) {
-        $message_error=$query." \n ".mysql_error($link)." \n <BR>Database Error.<BR>No further execution possible.";
-        error_log("Zambia: ".$message_error);
-        return(-1);
-        };
-    $rows=mysql_num_rows($result);
-    if ($rows==0) {
-        return(0);
-        };
-    for ($i=0; $i<$rows; $i++) {
-        $_SESSION['permission_set_specific'][]=mysql_fetch_array($result, MYSQL_ASSOC);
-        };
-
-    return(0);
+    if (!$result = mysqli_query_with_error_handling($query, true)) {
+        return (false);
     }
+    $rows = mysqli_num_rows($result);
+    if ($rows == 0) {
+        mysqli_free_result($result);
+        return (true);
+    };
+    for ($i = 0; $i < $rows; $i++) {
+        $onerow = mysqli_fetch_array($result, MYSQLI_NUM);
+        $_SESSION['permission_set'][] = $onerow[0];
+    };
+    mysqli_free_result($result);
+// Second, do <<specific>> permissions
+    $_SESSION['permission_set_specific'] = array();
+    $query = <<<EOD
+SELECT DISTINCT
+        permatomtag, elementid
+    FROM
+        PermissionAtoms PA
+        JOIN Permissions P USING(permatomid),
+        Phases PH,
+        PermissionRoles PR,
+        UserHasPermissionRole UHPR
+    WHERE
+            (   (UHPR.badgeid='$badgeid' AND UHPR.permroleid = P.permroleid)
+              OR P.badgeid='$badgeid' )
+        AND
+            (P.phaseid IS NULL
+            OR (P.phaseid = PH.phaseid AND PH.current = TRUE))
+        AND
+            PA.elementid IS NOT NULL;
+EOD;
+    if (!$result = mysqli_query_with_error_handling($query, true)) {
+        return (false);
+    }
+    $rows = mysqli_num_rows($result);
+    if ($rows == 0) {
+        mysqli_free_result($result);
+        return (true);
+    };
+    for ($i = 0; $i < $rows; $i++) {
+        $_SESSION['permission_set_specific'][] = mysqli_fetch_array($result, MYSQLI_ASSOC);
+    };
+    mysqli_free_result($result);
+    return (true);
+}
 
 //function db_error($title,$query,$staff)
 //Populates a bunch of messages to help diagnose a db error

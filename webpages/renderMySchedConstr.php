@@ -1,18 +1,18 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
 participant_header($title);
 if (!isset($daymap)) {
     error_log("zambia-render_my_avail: \$daymap is not set.");
     }
 ?>
 
-<?php if (isset($message_error)) { ?>
+<?php if (!empty($message_error)) { ?>
     <p class="alert alert-error"><?php echo $message_error; ?></p>
     <?php } ?>
-<?php if ($message!="") { ?>
+<?php if (!empty($message)) { ?>
     <p class="alert alert-success"><?php echo $message; ?></p>
     <?php } ?>
-<div id=constraint>
+<div id="constraint">
 <//?php print_r($partAvail);?>
 <form class="form-inline" name="constrform" method=POST action="SubmitMySchedConstr.php">
 
