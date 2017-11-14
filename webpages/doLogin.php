@@ -1,6 +1,6 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
-global $link, $linki;
+//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+global $link, $linki, $title;
 if (!isset($_SESSION['badgeid'])) {
 	$logging_in = true;
 	require_once ('error_functions.php');

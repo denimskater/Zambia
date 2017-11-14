@@ -1,5 +1,5 @@
 <?php
-//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
 
 function mysql_query_XML($query_array) {
 	global $linki, $message_error;
@@ -50,23 +50,47 @@ function mysql_query_XML($query_array) {
 	return ($xml);
 }
 
-function log_query_error($query, $error_message, $ajax) {
+/**
+ * @deprecated
+ */
+function log_mysql_error($query, $additional_error_message) {
+    global $link;
+    $result = "";
     error_log("mysql query error");
-    error_log($query);
-    error_log($error_message);
-    if ($ajax) {
-        echo "<span class=\"alert alert-error\">";
-        echo "Error updating or querying database. ";
-        echo $query . " ";
-        echo $error_message;
-        echo "</span>";
-    } else {
-        echo "<p class=\"alert alert-error\">";
-        echo "Error updating or querying database.<br>\n";
-        echo $query . "<br>\n";
-        echo $error_message;
-        echo "</p>\n";
+    if (!empty($query)) {
+        error_log($query);
+        $result = $query . "<br>\n";
     }
+    $query_error = mysql_error($link);
+    if (!empty($query_error)) {
+        error_log($query_error);
+        $result .= $query_error . "<br>\n";
+    }
+    if (!empty($additional_error_message)) {
+        error_log($additional_error_message);
+        $result .= $additional_error_message . "<br>\n";
+    }
+    return $result;
+}
+
+function log_mysqli_error($query, $additional_error_message) {
+    global $linki;
+    $result = "";
+    error_log("mysql query error");
+    if (!empty($query)) {
+        error_log($query);
+        $result = $query . "<br>\n";
+    }
+    $query_error = mysqli_error($linki);
+    if (!empty($query_error)) {
+        error_log($query_error);
+        $result .= $query_error . "<br>\n";
+    }
+    if (!empty($additional_error_message)) {
+        error_log($additional_error_message);
+        $result .= $additional_error_message . "<br>\n";
+    }
+    return $result;
 }
 
 /**
@@ -87,7 +111,7 @@ function mysql_query_with_error_handling($query, $exit_on_error = false, $ajax =
     global $link, $message_error;
     $result = mysql_query($query, $link);
     if (!$result) {
-        log_query_error($query, mysql_error($link), $ajax);
+        log_mysql_error($query, "", $ajax);
         if ($exit_on_error) {
             exitWithWrapup($ajax); // will exit script
         }
@@ -99,31 +123,13 @@ function mysqli_query_with_error_handling($query, $exit_on_error = false, $ajax 
     global $linki, $message_error;
     $result = mysqli_query($linki, $query);
     if (!$result) {
-        log_query_error($query, mysqli_error($linki), $ajax);
+        log_mysqli_error($query, "", $ajax);
         if ($exit_on_error) {
             exitWithWrapup($ajax); // will exit script
         }
     }
     return $result;
 }
-
-function exitWithWrapup($ajax) {
-	global $header_used;
-    if (!empty($header_used) && !$ajax) {
-        switch ($header_used) {
-            case HEADER_BRAINSTORM:
-                brainstorm_footer();
-                break;
-            case HEADER_PARTICIPANT:
-                participant_footer();
-                break;
-            case HEADER_STAFF:
-                staff_footer();
-                break;
-        }
-    }
-    exit(-1);
-};
 
 /**
  * @deprecated
@@ -137,7 +143,7 @@ function rollback_mysqli($exit_on_error = false, $ajax = false) {
     if (mysqli_rollback($linki)) {
         return true;
     }
-    log_query_error("<ROLLBACK>", mysqli_error($linki), $ajax);
+    log_mysqli_error("<ROLLBACK>", "", $ajax);
     if ($exit_on_error) {
         exitWithWrapup($ajax); // will exit script
     }
@@ -827,8 +833,8 @@ EOD;
     }
     $rows = mysqli_num_rows($result);
     if ($rows != 1) {
-        $message_error = "Found $rows rows for participant with badgeid:$badgeid.  Expected 1."
-        log_query_error($query, $message_error, false);
+        $message_error = "Found $rows rows for participant with badgeid:$badgeid.  Expected 1.";
+        log_mysqli_error($query, $message_error, false);
         if ($exit_on_error) {
             exitWithWrapup(false); // will exit script
         }

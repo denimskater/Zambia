@@ -1,6 +1,6 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
-	global $participant, $message_error, $message2, $congoinfo;
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+	global $participant, $message_error, $message2, $congoinfo, $title;
 	$title="Reports in Category";
 	require_once('db_functions.php');
 	require_once('StaffHeader.php');

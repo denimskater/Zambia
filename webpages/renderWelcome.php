@@ -1,6 +1,6 @@
 <?php
 //	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
-global $message, $message_error, $message2, $congoinfo;
+global $message, $message_error, $message2, $congoinfo, $title;
 //error_log("Zambia: Reached renderWelcome.php"); 
 $title = "Participant View";
 require_once('PartCommonCode.php');

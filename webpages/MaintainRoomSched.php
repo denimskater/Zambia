@@ -1,5 +1,6 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+global $daymap, $message_error, $link, $title;
 define ("newroomslots",5); // number of rows at bottom of page for new schedule entries
 $title="Maintain Room Schedule";
 require_once('db_functions.php');
@@ -8,7 +9,6 @@ require_once('StaffHeader.php');
 require_once('StaffFooter.php');
 require_once('StaffCommonCode.php');
 require_once('SubmitMaintainRoom.php');
-global $daymap, $message_error, $link;
 
 staff_header($title);
 $topsectiononly=true; // no room selected -- flag indicates to display only the top section of the page

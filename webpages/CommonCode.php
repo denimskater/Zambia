@@ -1,6 +1,7 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
-    require_once('Constants.php');
+//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+	global $title;
+	require_once('Constants.php');
     require_once('data_functions.php');
     require_once('db_functions.php');
     require_once('render_functions.php');

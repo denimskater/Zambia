@@ -1,11 +1,11 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $message_error, $title;
     require_once ('db_functions.php');
     require_once('BrainstormCommonCode.php');
     $title="Likely to Occur Suggestions";
     $ConStartDatim = CON_START_DATIM;
     $showlinks=$_GET["showlinks"];
-    global $message_error;
     $_SESSION['return_to_page']="ViewPrecis.php?showlinks=$showlinks";
     if ($showlinks=="1") {
             $showlinks=true;

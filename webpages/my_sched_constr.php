@@ -1,5 +1,6 @@
 <?php
-    global $message_error, $partAvail, $badgeid;
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $message_error, $partAvail, $badgeid, $title;
     $title = "My Availability";
     require('PartCommonCode.php'); // initialize db; check login;
     //                                  set $badgeid from session

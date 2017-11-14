@@ -1,6 +1,6 @@
 <?php
-	// $Header$
-    global $participant,$message_error,$message2,$congoinfo,$session_interests,$session_interest_index, $title;
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $participant, $message_error, $message2, $congoinfo, $session_interests, $session_interest_index, $title;
     $title="Select Sessions";
     require ('PartCommonCode.php'); //define database functions
     require ('PartPanelInterests_FNC.php');

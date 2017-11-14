@@ -1,8 +1,7 @@
 <?php
-    //	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $message_error, $messages, $title, $partAvail;
     $title = "My Availability";
-    global $message_error, $messages;
-    global $partAvail;
     require('PartCommonCode.php'); // initialize db; check login;
     //                                  set $badgeid from session
     require('my_sched_constr_func.php');

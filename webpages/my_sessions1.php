@@ -1,6 +1,7 @@
 <?php
-    global $participant,$message_error,$message2,$congoinfo;
-    global $partAvail,$availability;
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $participant, $message_error, $message2, $congoinfo;
+    global $partAvail, $availability, $title;
     $title="Search Sessions";
     require ('PartCommonCode.php'); // initialize db; check login;
     //                                  set $badgeid from session

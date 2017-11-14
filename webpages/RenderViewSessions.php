@@ -1,6 +1,7 @@
 <?php
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
   function RenderViewSessions() {
-    global $result; 
+    global $result, $title;
     $title="Session Query Results";
       staff_header($title);
 ?>

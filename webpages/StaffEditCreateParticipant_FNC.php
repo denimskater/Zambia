@@ -1,4 +1,5 @@
 <?php
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
     // This function will output the page with the form to add or create a participant
     // Variables
     //     action: "create" or "edit"
@@ -6,6 +7,7 @@
     //     message1: a string to display before the form
     //     message2: an urgent string to display before the form and after m1
 function RenderEditCreateParticipant ($action, $participant_arr, $message1, $message2) {
+    global $title;
     if ($action=="create") {
             $title="Add New Participant";
             }

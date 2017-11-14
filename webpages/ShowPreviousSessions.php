@@ -1,7 +1,8 @@
 <?php
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
     require_once ('StaffCommonCode.php');
     require_once ('StaffSearchPreviousSessions_FNC.php');
-    global $SessionSearchParameters, $message_error,$message;
+    global $SessionSearchParameters, $message_error, $message, $title;
     $title="Show Previous Sessions";
     staff_header($title);
     if (!HandleSearchParameters()) {    // Grab the parameters and validate them

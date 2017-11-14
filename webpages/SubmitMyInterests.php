@@ -1,5 +1,6 @@
 <?php
-    global $participant,$message_error,$message2,$congoinfo;
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $participant, $message_error, $message2, $congoinfo, $title;
     $title="My Interests";
     require ('PartCommonCode.php'); // initialize db; check login;
     require_once('ParticipantHeader.php');

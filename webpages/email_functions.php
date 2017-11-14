@@ -1,4 +1,5 @@
 <?php
+//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
 // function $email=get_email_from_post()
 // reads post variable to populate email array
 // returns email array or false if an error was encountered.
@@ -50,6 +51,7 @@ function set_email_defaults() {
 // This function will render the entire page.
 // This page will next go to the StaffSendEmailCompose_POST page
 function render_send_email($email, $message_warning) {
+    global $title;
     $title="Send Email to Participants";
     require_once('StaffHeader.php');
     require_once('StaffFooter.php');
@@ -96,6 +98,7 @@ function render_send_email($email, $message_warning) {
 // function renderQueueEmail($goodCount,$arrayOfGood,$badCount,$arrayOfBad)
 //
 function renderQueueEmail($goodCount,$arrayOfGood,$badCount,$arrayOfBad) {
+    global $title;
     $title="Results of Queueing Email";
     require_once('StaffHeader.php');
     require_once('StaffFooter.php');
@@ -131,6 +134,7 @@ function renderQueueEmail($goodCount,$arrayOfGood,$badCount,$arrayOfBad) {
 // This function will render the entire page.
 // This page will next go to the StaffSendEmailResults_POST page
 function render_verify_email($email, $email_verify, $message_warning) {
+    global $title;
     $title="Send Email";
     require_once('StaffHeader.php');
     require_once('StaffFooter.php');
@@ -159,6 +163,7 @@ function render_verify_email($email, $email_verify, $message_warning) {
     }
 
 function render_send_email_engine($email,$message_warning) {
+    global $title;
     $title="Pretend to actually send email.";
     require_once('StaffHeader.php');
     require_once('StaffFooter.php');

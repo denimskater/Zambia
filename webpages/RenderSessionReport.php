@@ -1,6 +1,7 @@
 <?php
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
   function RenderSessionReport() {
-    global $result; 
+    global $result, $title;
     $title="Session Report";
     require_once('db_functions.php');
     require_once('StaffHeader.php');

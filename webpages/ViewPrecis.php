@@ -1,4 +1,6 @@
 <?php
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $title;
     require_once ('db_functions.php');
     require_once('StaffCommonCode.php');
     require_once('StaffHeader.php');
@@ -20,7 +22,7 @@
     $sessionid="";
     $divisionid="";
     $searchtitle="";
-    if (retrieve_select_from_db($trackdlist,$statusidlist,$typeidlist,$sessionid,$divisionid,$searchtitle)==0) {
+    if (retrieve_select_from_db($trackidlist,$statusidlist,$typeidlist,$sessionid,$divisionid,$searchtitle)==0) {
         staff_header($title);
         echo "<p> If you have any questions please contact ";
         echo "<a href=\"mailto:".PROGRAM_EMAIL."\">".PROGRAM_EMAIL."</a> </p>\n";

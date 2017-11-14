@@ -1,5 +1,5 @@
 <?php
-	// $Header$
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
     //This file should be requested from post on "session interests(ranks)" form
     require ('PartCommonCode.php'); // initialize db; check login; set $badgeid
     require ('PartPanelInterests_FNC.php');

@@ -1,4 +1,5 @@
 <?php
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
 // This page has two completely different entry points from a user flow standpoint:
 //   1) Beginning of send email flow -- start to specify parameters
 //   2) After verify -- 'back' can change parameters -- 'send' fire off email sending code

@@ -1,4 +1,6 @@
 <?php
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $title;
     require_once ('StaffCommonCode.php');
     require_once ('RenderViewSessions.php');
     require_once ('render_functions.php');

@@ -1,8 +1,10 @@
 <?php
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
     // The current version of the Welcome Page does not include a form for doing this, but this
     // code for SubmitWelcome supports having the user change his password directly on the
     // Welcome page.  A previous version prompted the user to change his password if it was
     // still the initial password.
+    global $title;
     require ('PartCommonCode.php');
     $title="Welcome";
     $interested = $_POST['interested'];

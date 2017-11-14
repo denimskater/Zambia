@@ -1,9 +1,9 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+	global $message_error, $title;
 	$title="My Profile";
     require ('PartCommonCode.php'); // initialize db; check login;
     //                                  set $badgeid from session
-	global $message_error;
 	$password = false;
 	$pubsname = false;
 	//$foo = print_r($_POST,true);

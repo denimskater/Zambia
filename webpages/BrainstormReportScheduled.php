@@ -1,23 +1,22 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $message_error, $title;
     require_once ('db_functions.php');
     require_once('BrainstormCommonCode.php');
     $title="Scheduled Suggestions";
 	$ConStartDatim = CON_START_DATIM;
-    global $message_error;
     $showlinks=$_GET["showlinks"];
     $_SESSION['return_to_page']="ViewPrecis.php?showlinks=$showlinks";
-    if ($showlinks=="1") {
-            $showlinks=true;
-            }
-    elseif ($showlinks="0") {
-            $showlinks=false;
-            }
-    if (prepare_db()===false) {
-        $message="Error connecting to database.";
-        RenderError($title,$message);
+    if ($showlinks == "1") {
+        $showlinks = true;
+    } elseif ($showlinks = "0") {
+        $showlinks = false;
+    }
+    if (prepare_db() === false) {
+        $message = "Error connecting to database.";
+        RenderError($title, $message);
         exit ();
-        }
+    }
    $query = <<<EOD
 SELECT
         sessionid, trackname, null typename, title, 

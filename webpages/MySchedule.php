@@ -1,4 +1,6 @@
 <?php
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $title;
     $title="My Schedule";
     require ('PartCommonCode.php'); // initialize db; check login;
     $CON_START_DATIM=CON_START_DATIM; //make it a variable so it will be substituted

@@ -1,6 +1,5 @@
 <?php
-// $Header$
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
     require ('BrainstormCommonCode.php');
     require ('BrainstormRenderCreateSession.php');
     global $badgeid, $email, $name, $session, $title;

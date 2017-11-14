@@ -1,4 +1,6 @@
 <?php
+//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $title;
     require_once ('db_functions.php');
     require_once('BrainstormCommonCode.php');
     require_once('BrainstormHeader.php');

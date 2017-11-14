@@ -1,5 +1,6 @@
 <?php
-    global $participant,$message_error,$message2,$congoinfo;
+//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+    global $participant, $message_error, $message2, $congoinfo, $title;
     $title="Brainstorm View";
     require_once ('BrainstormCommonCode.php'); 
     if (retrieve_participant_from_db($badgeid)==0) {

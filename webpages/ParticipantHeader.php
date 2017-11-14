@@ -1,5 +1,5 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
     function participant_header($title) {
     require_once ("javascript_functions.php");
     global $badgeid, $header_used, $message;

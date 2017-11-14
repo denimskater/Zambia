@@ -5,17 +5,17 @@ require_once('email_functions.php');
 require_once('db_functions.php');
 require_once('render_functions.php');
 require_once('StaffCommonCode.php'); //reset connection to db and check if logged in
-global $message, $link;
+global $message, $link, $title;
 $subst_list = array('$BADGEID$', '$FIRSTNAME$', "\$LASTNAME\$", "\$EMAILADDR\$", "\$PUBNAME\$", "\$BADGENAME\$");
 $title = "Send Email (Step 2 - verify)";
 if (!isset($_POST['sendto'])) { // page has not been visited before
     $message_error = "Expected POST data was missing.  This page is intended to be reached via a form.";
     $message_error .= " It will not work if you link to it directly.\n";
-    StaffRenderError($title, $message_error);
+    StaffRenderErrorPage($title, $message_error);
     exit(0);
 }
 $email = get_email_from_post();
-if (!validate_email($email)) {ß
+if (!validate_email($email)) {
     render_send_email($email, $message); // $message came from validate_email
     exit(0);
 }
