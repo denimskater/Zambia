@@ -7,21 +7,21 @@
     if (!isset($_GET['action'])) {
         $title = "Edit or Add Participant";
         $message_error = "Required parameter 'action' not found.  Can't continue.<BR>\n";
-        RenderError($title, $message_error);
+        RenderError($message_error);
         exit();
     }
     $action = $_GET['action'];
     if (!($action == "edit" || $action == "create")) {
         $title = "Edit or Add Participant";
         $message_error = "Parameter 'action' contains invalid value.  Can't continue.<BR>\n";
-        RenderError($title, $message_error);
+        RenderError($message_error);
         exit();
     }
     if ($action == "create") { //initialize participant array
         $title = "Add Participant";
         if (!may_I('create_participant')) {
             $message_error = "You do not have permission to access this page.<BR>\n";
-            RenderError($title, $message_error);
+            RenderError($message_error);
             exit();
         }
         $participant_arr['password'] = "changeme";
@@ -40,12 +40,12 @@
         $title = "Edit Participant";
         if (!may_I('edit_participant')) {
             $message_error = "You do not have permission to access this page.<BR>\n";
-            RenderError($title, $message_error);
+            RenderError($message_error);
             exit();
         }
         if (!(isset($_GET['badgeid']))) {
             $message_error = "Required parameter 'badgeid' not found.  Can't continue.<BR>\n";
-            RenderError($title, $message_error);
+            RenderError($message_error);
             exit();
         }
         $badgeid = mysql_real_escape_string($_GET['badgeid'], $link);
@@ -54,13 +54,13 @@
         if (($result = mysql_query($query, $link)) === false) {
             $message_error = "Error retrieving data from database<BR>\n";
             $message_error .= $query;
-            RenderError($title, $message_error);
+            RenderError($message_error);
             exit();
         }
         if (mysql_num_rows($result) != 1) {
             $message_error = "Database query did not return expected number of rows (1).<BR>\n";
             $message_error .= $query;
-            RenderError($title, $message_error);
+            RenderError($message_error);
             exit();
         }
         $result_array = mysql_fetch_array($result, MYSQL_ASSOC);
@@ -76,13 +76,13 @@
         if (($result = mysql_query($query, $link)) === false) {
             $message_error = "Error retrieving data from database<BR>\n";
             $message_error .= $query;
-            RenderError($title, $message_error);
+            RenderError($message_error);
             exit();
         }
         if (mysql_num_rows($result) != 1) {
             $message_error = "Database query did not return expected number of rows (1).<BR>\n";
             $message_error .= $query;
-            RenderError($title, $message_error);
+            RenderError($message_error);
             exit();
         }
         $result_array = mysql_fetch_array($result, MYSQL_ASSOC);

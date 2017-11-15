@@ -47,7 +47,7 @@ SELECT
 EOD;
 if (!$Presult=mysql_query($query,$link)) {
     $message=$query."<BR>Error querying database. Unable to continue.<BR>";
-    RenderError($title,$message);
+    RenderError($message);
     exit();
     }
 $query="SELECT T.trackname, S.sessionid, S.title FROM Sessions AS S ";
@@ -57,7 +57,7 @@ $query.="WHERE SS.may_be_scheduled=1 ";
 $query.="ORDER BY T.trackname, S.sessionid, S.title";
 if (!$Sresult=mysql_query($query,$link)) {
     $message=$query."<BR>Error querying database. Unable to continue.<BR>";
-    RenderError($title,$message);
+    RenderError($message);
     exit();
     }
 echo "<p>Use this tool to put sessions marked \"invited guests only\" on a participant's interest list.\n";

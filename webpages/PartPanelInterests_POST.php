@@ -9,17 +9,17 @@
     $error=false;
     if (!may_I('my_panel_interests')) {
         $message = "You do not currently have permission to view this page.<br />\n";
-        RenderError("Permission Error", $message);
+        RenderError($message);
         exit();
         }
     if (!isset($_POST["add"])) { //That should be "submit" button on "add" form.
         $message = "This page was reached from an unexpected place.<br />\n";
-        RenderError("Page Flow Error", $message);
+        RenderError($message);
         exit();
         }
     if (!isset($_POST["addsessionid"])) { //That should be "sessionid" box on "add" form.
         $message = "Sessionid value not found.<br />\n";
-        RenderError($title, $message);
+        RenderError($message);
         exit();
         }
     $addsessionid = $_POST["addsessionid"];
@@ -32,7 +32,7 @@
             $query = "INSERT INTO ParticipantSessionInterest set badgeid=\"$badgeid\", sessionid=$addsessionid";
             if (!$result = mysql_query($query,$link)) {
                 $message = $query."<br />Error inserting into database.<br />";
-                RenderError($title, $message);
+                RenderError($message);
                 exit();
                 }
             $message = "Database updated successfully.";

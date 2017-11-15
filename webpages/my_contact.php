@@ -25,7 +25,7 @@ SELECT
 			AND PHC.badgeid="$badgeid";
 EOD;
 	if (($resultXML=mysql_query_XML($queryArray))===false) {
-	    RenderError($title,$message_error);
+	    RenderError($message_error);
         exit();
         }
 	$optionsNode = $resultXML->createElement("options");

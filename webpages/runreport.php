@@ -9,7 +9,7 @@
 	$reporttypeid = getInt("reporttypeid");
 	if ($reporttypeid === false) {
 		$message_error = "Required parameter reporttypeid misssing or invalid.";
-		RenderError($title, $message_error);
+		RenderError($message_error);
 		exit();
 	}
 	$_SESSION['return_to_page'] = "runreport.php?reporttypeid=$reporttypeid";
@@ -17,27 +17,27 @@
 	$result = mysql_query_with_error_handling($query, true);
 	if (mysql_num_rows($result) != 1) {
 		$message = "Report type $reporttypeid not found in db. ";
-		RenderError($title, $message);
+		RenderError($message);
 		exit();
 	}
 	list($title, $description, $oldmechanism, $xmlstr) = mysql_fetch_array($result, MYSQL_NUM);
 	if ($oldmechanism == '1') {
 		$message = "Problem with report configuration for $reporttypeid.";
-		RenderError($title, $message);
+		RenderError($message);
 		exit();
 	}
 	$query = "SELECT queryname, query from ReportQueries where reporttypeid = $reporttypeid;";
 	$result = mysql_query_with_error_handling($query, true);
 	if (mysql_num_rows($result) == 0) {
 		$message = "Problem retrieving queries for report. ";
-		RenderError($title, $message);
+		RenderError($message);
 		exit();
 	}
 	while ($row = mysql_fetch_assoc($result)) {
 		$queryArray[$row["queryname"]] = str_replace('$ConStartDatim$', CON_START_DATIM, $row["query"]);
 	}
 	if (($resultXML = mysql_query_XML($queryArray)) === false) {
-		RenderError($title, $message_error);
+		RenderError($message_error);
 		exit();
 	}
 	staff_header($title);

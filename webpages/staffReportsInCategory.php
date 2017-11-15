@@ -9,7 +9,7 @@
 	$reportcategoryid = getInt("reportcategoryid");
 	if ($reportcategoryid === false) {
 		$message_error = "Required parameter reportcategoryid misssing or invalid.";
-		RenderError($title, $message_error);
+		RenderError($message_error);
         exit();
 		}
 	if ($reportcategoryid == 0) {
@@ -29,7 +29,7 @@ EOD;
 			$result = mysql_query_with_error_handling($query, true);
 			if (mysql_num_rows($result) != 1) {
 				$message_error = "reportcategoryid $reportcategoryid not found in db.";
-				RenderError($title, $message_error);
+				RenderError($message_error);
 				exit();
 				}
 			$title = mysql_result($result,0);
@@ -46,7 +46,7 @@ SELECT
 EOD;
 			}
 	if (($resultXML=mysql_query_XML($queryArray))===false) {
-	    RenderError($title,$message_error);
+	    RenderError($message_error);
         exit();
         }
 	staff_header($title);

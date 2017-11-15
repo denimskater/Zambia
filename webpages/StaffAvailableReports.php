@@ -8,7 +8,7 @@
 	require_once('StaffCommonCode.php');
 	$queryArray["categories"] = "SELECT reportcategoryid, description FROM ReportCategories ORDER BY display_order;";
 	if (($resultXML=mysql_query_XML($queryArray))===false) {
-	    RenderError($title,$message_error);
+	    RenderError($message_error);
         exit();
         }
 	staff_header($title);

@@ -13,7 +13,7 @@
 }session_start();
     if (prepare_db()===false) {
         $message_error="Unable to connect to database.<BR>No further execution possible.";
-        RenderError($title,$message_error);
+        RenderError($message_error);
         exit();
         };
     if (isLoggedIn()===false and !isset($logging_in)) {
@@ -27,7 +27,7 @@
     	};
     if (!populateCustomTextArray()) {
 		$message_error="Failed to retrieve custom text. ".$message_error;
-        RenderError($title,$message_error);
+        RenderError($message_error);
         exit();
 		}
 

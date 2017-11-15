@@ -33,7 +33,7 @@ function RenderError($message_error, $ajax = false) {
     global $header_used, $title;
     if ($ajax) {
         RenderErrorAjax($message_error);
-        return;
+        exit(0);
     }
     if (!empty($header_used)) {
         echo "<p class=\"alert alert-error\">$message_error</p>\n";
@@ -48,22 +48,22 @@ function RenderError($message_error, $ajax = false) {
                 staff_footer();
                 break;
         }
-        return;
+        exit(0);
     }
     if (empty($title)) {
         $title = "";
     }
     if (isset($_SESSION['role']) && $_SESSION['role'] === "Brainstorm") {
         BrainstormRenderErrorPage($title, $message_error);
-        return;
+        exit(0);
     }
     if (isset($_SESSION['role']) && $_SESSION['role'] === "Participant") {
         PartRenderErrorPage($title, $message_error);
-        return;
+        exit(0);
     }
     if (isset($_SESSION['role']) && $_SESSION['role'] === "Staff") {
         StaffRenderErrorPage($title, $message_error);
-        return;
+        exit(0);
     }
     // else
     // do something generic here (though this might be way too generic)

@@ -7,7 +7,7 @@
     //                                  set $badgeid from session
     if (!may_I('search_panels')) {
         $message_error="You do not currently have permission to view this page.<BR>\n";
-        RenderError($title,$message_error);
+        RenderError($message_error);
         exit();
         }
     require_once('ParticipantHeader.php');

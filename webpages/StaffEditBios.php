@@ -6,7 +6,7 @@
     //print_r($_GET);
     if (!isset($_GET['badgeid'])) {
         $message="Required argument 'badgeid' missing from URL.<BR>\n";
-        RenderError($title,$message);
+        RenderError($message);
         exit ();
         }
     $badgeid=$_GET['badgeid'];
@@ -22,7 +22,7 @@ SELECT
 EOD;
     if (($result=mysql_query($query,$link))===false) {
         $message=$query."<BR>\nError retrieving data from database.\n";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     $participant_info_array=mysql_fetch_assoc($result);
@@ -36,7 +36,7 @@ SELECT
 EOD;
     if (($result=mysql_query($query,$link))===false) {
         $message=$query."<BR>\nError retrieving data from database.\n";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     $numeditstatuses=mysql_num_rows($result);
@@ -51,7 +51,7 @@ EOD;
         //error_log("Zambia: StaffEditBios:".$query);
         if (($result=mysql_query($query,$link))===false) {
             $message=$query."<BR>\nError retrieving data from database.\n";
-            RenderError($title,$message);
+            RenderError($message);
             exit();
             }
         //error_log("Zambia: StaffEditBios:".mysql_num_rows($result));

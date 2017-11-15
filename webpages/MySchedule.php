@@ -9,7 +9,7 @@
     // require_once('renderMySessions2.php');
     if (!may_I('my_schedule')) {
         $message_error="You do not currently have permission to view this page.<BR>\n";
-        RenderError($title,$message_error);
+        RenderError($message_error);
         exit();
         }
     // set $badgeid from session
@@ -63,7 +63,7 @@ EOD;
     $query.="WHERE C.badgeid=\"$badgeid\"";
     if (!$result=mysql_query($query,$link)) {
         $message.=$query."<BR>Error querying database.<BR>";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     $row=mysql_fetch_array($result, MYSQL_NUM);
@@ -72,7 +72,7 @@ EOD;
     $query.="POS.sessionid=SCH.sessionid and badgeid=\"$badgeid\"";
     if (!$result=mysql_query($query,$link)) {
         $message.=$query."<BR>Error querying database.<BR>";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     $row=mysql_fetch_array($result, MYSQL_NUM);

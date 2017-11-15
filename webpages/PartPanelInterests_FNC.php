@@ -14,7 +14,7 @@ SELECT sessionid, rank, willmoderate, comments FROM ParticipantSessionInterest
 EOD;
     if (!$result=mysql_query($query,$link)) {
         $message.=$query."<br />Error querying database.<br />";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     $session_interest_count=mysql_num_rows($result);
@@ -59,7 +59,7 @@ SELECT
 EOD;
     if (!$result=mysql_query($query,$link)) {
         $message.=$query."<BR>Error querying database.<BR>";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     $num_rows=mysql_num_rows($result);
@@ -120,7 +120,7 @@ function update_session_interests_in_db($badgeid,$session_interest_count) {
 		$query="DELETE FROM ParticipantSessionInterest WHERE badgeid=\"$badgeid\" and sessionid in ($deleteSessionIds)";
 		if (!mysql_query($query,$link)) {
 	        $message=$query."<br />Error updating database.  Database not updated.";
-	        RenderError($title,$message);
+	        RenderError($message);
 	        exit();
 			}
 		$deleteCount=mysql_affected_rows($link);
@@ -142,7 +142,7 @@ function update_session_interests_in_db($badgeid,$session_interest_count) {
 		$query=substr($query,0,-1); // drop trailing ","
         if (!mysql_query($query,$link)) {
             $message=$query."<br />Error updating database.  Database not updated.";
-            RenderError($title,$message);
+            RenderError($message);
             exit();
             }
 		$message.="$noDeleteCount sessions recorded.<br />\n";

@@ -56,7 +56,7 @@ function validate_add_session_interest($sessionid,$badgeid,$mode) {
     $query.="        S.sessionid=$sessionid";
     if (!$result=mysql_query($query,$link)) {
         $message=$query."<BR>\nError querying database.<BR>\n";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     if (mysql_num_rows($result)==0) {
@@ -67,7 +67,7 @@ function validate_add_session_interest($sessionid,$badgeid,$mode) {
     $query.="$sessionid and badgeid=\"$badgeid\"";
     if (!$result=mysql_query($query,$link)) {
         $message=$query."<BR>Error querying database.<BR>\n";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     if (mysql_num_rows($result)!=0) {

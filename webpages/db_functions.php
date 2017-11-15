@@ -27,7 +27,7 @@ function mysql_query_XML($query_array) {
             $message_error .= "Error with query number " . ($queryNo + 1) . " <br />";
             $message_error .= mysqli_error($linki) . "<br />";
             //error_log("2: errored out of mysql_query_XML");
-            return(FALSE);
+            return false;
         }
         $result = mysqli_store_result($linki);
         $queryNode = $xml -> createElement("query");
@@ -47,7 +47,7 @@ function mysql_query_XML($query_array) {
         $queryNo++;
         //error_log("4: increment \$queryNo to $queryNo");
     } while (mysqli_more_results($linki));
-	return ($xml);
+	return $xml;
 }
 
 /**
@@ -111,9 +111,9 @@ function mysql_query_with_error_handling($query, $exit_on_error = false, $ajax =
     global $link, $message_error;
     $result = mysql_query($query, $link);
     if (!$result) {
-        log_mysql_error($query, "", $ajax);
+        $message_error = log_mysql_error($query, "");
         if ($exit_on_error) {
-            exitWithWrapup($ajax); // will exit script
+            RenderError($message_error, $ajax); // will exit script
         }
     }
     return $result;
@@ -123,9 +123,9 @@ function mysqli_query_with_error_handling($query, $exit_on_error = false, $ajax 
     global $linki, $message_error;
     $result = mysqli_query($linki, $query);
     if (!$result) {
-        log_mysqli_error($query, "", $ajax);
+        $message_error = log_mysqli_error($query, "");
         if ($exit_on_error) {
-            exitWithWrapup($ajax); // will exit script
+            RenderError($message_error, $ajax); // will exit script
         }
     }
     return $result;
@@ -143,9 +143,9 @@ function rollback_mysqli($exit_on_error = false, $ajax = false) {
     if (mysqli_rollback($linki)) {
         return true;
     }
-    log_mysqli_error("<ROLLBACK>", "", $ajax);
+    $message_error = log_mysqli_error("<ROLLBACK>", "");
     if ($exit_on_error) {
-        exitWithWrapup($ajax); // will exit script
+        RenderError($message_error, $ajax); // will exit script
     }
     return false;
 }
@@ -155,7 +155,7 @@ function populateCustomTextArray() {
     $customTextArray = array();
     $query = "SELECT tag, textcontents FROM CustomText WHERE page = \"$title\";";
     if (!$result = mysqli_query_with_error_handling($query))
-        return (FALSE);
+        return false;
     while ($row = mysqli_fetch_assoc($result)) {
         $customTextArray[$row["tag"]] = $row["textcontents"];
     }
@@ -172,15 +172,15 @@ function prepare_db() {
     global $link, $linki;
     $link = mysql_connect(DBHOSTNAME,DBUSERID,DBPASSWORD);
     if ($link === false)
-		return (false);
+		return false;
 	if (!mysql_select_db(DBDB, $link))
-		return (false);
+		return false;
     if (!mysql_set_charset("utf8", $link))
-        return (false);
+        return false;
     $linki = mysqli_connect(DBHOSTNAME, DBUSERID, DBPASSWORD, DBDB);
     if ($linki === false)
-        return (false);
-    return (mysqli_set_charset($linki, "utf8"));
+        return false;
+    return mysqli_set_charset($linki, "utf8");
 }
 
 
@@ -200,7 +200,7 @@ INSERT INTO SessionEditHistory
         sessioneditcode = $editcode,
         statusid = $statusid;
 EOD;
-	return (mysqli_query_with_error_handling($query));
+	return mysqli_query_with_error_handling($query);
 }
 
 // Function get_name_and_email(&$name, &$email)
@@ -209,18 +209,18 @@ EOD;
 function get_name_and_email(&$name, &$email) {
     global $badgeid;
     if (!empty($name)) {
-        return (TRUE);
+        return true;
     }
     if (isset($_SESSION['name'])) {
         $name = $_SESSION['name'];
         $email = $_SESSION['email'];
         //error_log("get_name_and_email found a name in the session variables.");
-        return(TRUE);
+        return true;
     }
     if (may_I('Staff') || may_I('Participant')) { //name and email should be found in db if either set
         $query = "SELECT pubsname FROM Participants WHERE badgeid = '$badgeid';";
 		if (!$result = mysqli_query_with_error_handling($query)) {
-            return(FALSE);
+            return false;
         }
         $name = mysqli_fetch_row($result)[0];
 		mysqli_free_result($result);
@@ -229,7 +229,7 @@ function get_name_and_email(&$name, &$email) {
         }
         $query = "SELECT badgename, email FROM CongoDump WHERE badgeid = \"$badgeid\";";
 		if (!$result = mysqli_query_with_error_handling($query)) {
-            return(FALSE);
+            return false;
         }
         $row = mysqli_fetch_row($result);
         mysqli_free_result($result);
@@ -238,7 +238,7 @@ function get_name_and_email(&$name, &$email) {
         }
         $email = $row[1];
     }
-    return(TRUE); //return TRUE even if didn't retrieve from db because there's nothing to be done
+    return true; //return TRUE even if didn't retrieve from db because there's nothing to be done
 }
 
 // Function populate_select_from_table(...)
@@ -259,7 +259,7 @@ function populate_select_from_table($table_name, $default_value, $option_0_text,
     }
     $query = "Select * FROM $table_name ORDER BY display_order;";
     if (!$result = mysqli_query_with_error_handling($query)) {
-        return (FALSE);
+        return false;
     }
     while (list($option_value, $option_name) = mysqli_fetch_array($result, MYSQLI_NUM)) {
         echo "<option value=\"$option_value\"";
@@ -269,7 +269,7 @@ function populate_select_from_table($table_name, $default_value, $option_0_text,
         echo ">$option_name</option>\n";
     }
     mysqli_free_result($result);
-    return (TRUE);
+    return true;
 }
 
 // Function populate_select_from_query(...)
@@ -611,13 +611,13 @@ SELECT
         sessionid = $sessionid;
 EOD;
     if (!$result = mysqli_query_with_error_handling($query)) {
-        $message_error = "Error retrieving record from database. $message_error";
-        return (FALSE);
+        $message_error = "Error retrieving record from database. <br />\n$message_error";
+        return false;
     }
     $rows = mysqli_num_rows($result);
     if ($rows != 1) {
-        $message_error = "Session record with id = $sessionid not found (or error with Session primary key). $message_error";
-        return (FALSE);
+        $message_error = "Session record with id = $sessionid not found (or error with Session primary key). <br />\n$message_error";
+        return false;
     }
     $sessionarray = mysqli_fetch_array($result, MYSQLI_ASSOC);
     $session["sessionid"] = $sessionarray["sessionid"];
@@ -650,8 +650,8 @@ EOD;
     mysqli_free_result($result);
     $query = "SELECT featureid FROM SessionHasFeature WHERE sessionid = $sessionid;";
     if (!$result = mysqli_query_with_error_handling($query)) {
-        $message_error = "Error retrieving record from database. $message_error";
-        return (FALSE);
+        $message_error = "Error retrieving record from database. <br />\n$message_error";
+        return false;
     }
     $session["featdest"] = array();
     while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
@@ -660,8 +660,8 @@ EOD;
     mysqli_free_result($result);
     $query = "SELECT serviceid FROM SessionHasService WHERE sessionid = $sessionid;";
     if (!$result = mysqli_query_with_error_handling($query)) {
-        $message_error = "Error retrieving record from database. $message_error";
-        return (FALSE);
+        $message_error = "Error retrieving record from database. <br />\n$message_error";
+        return false;
     }
     $session["servdest"] = array();
     while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
@@ -670,15 +670,15 @@ EOD;
     mysqli_free_result($result);
     $query = "SELECT pubcharid FROM SessionHasPubChar WHERE sessionid = $sessionid;";
     if (!$result = mysqli_query_with_error_handling($query)) {
-        $message_error = "Error retrieving record from database. $message_error";
-        return (FALSE);
+        $message_error = "Error retrieving record from database. <br />\n$message_error";
+        return false;
     }
     $session["pubchardest"] = array();
     while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
         $session["pubchardest"][] = $row[0];
     }
     mysqli_free_result($result);
-    return ($session);
+    return $session;
 }
 
 // Function isLoggedIn()
@@ -706,7 +706,7 @@ function isLoggedIn() {
         unset($_SESSION['badgeid']);
         unset($_SESSION['password']);
         // kill incorrect session variables.
-        return (""); //falsy
+        return ""; //falsy
     }
 
     if (mysqli_num_rows($result) != 1) {
@@ -714,7 +714,7 @@ function isLoggedIn() {
         unset($_SESSION['password']);
         // kill incorrect session variables.
         $message_error = "Incorrect number of rows returned when fetching password from db. $message_error";
-        return (""); //falsy
+        return ""; //falsy
     }
 
     $row = mysqli_fetch_array($result, MYSQLI_NUM);
@@ -738,9 +738,9 @@ function isLoggedIn() {
         unset($_SESSION['badgeid']);
         unset($_SESSION['password']);
         $message2 = "Incorrect userid or password.";
-        return (false);
+        return false;
     } else {
-        return (true);
+        return true;
     }
 }
 
@@ -763,16 +763,16 @@ SELECT
         badgeid="$badgeid";
 EOD;
     if ($result = mysqli_query_with_error_handling($query)) {
-        return (FALSE);
+        return false;
     }
     $rows = mysqli_num_rows($result);
     if ($rows != 1) {
         $message_error = "Participant rows retrieved: $rows $message_error";
-        return (FALSE);
+        return false;
     }
     $participant_array = mysqli_fetch_array($result, MYSQLI_ASSOC);
     mysqli_free_result($result);
-    return ($participant_array);
+    return $participant_array;
 }
 
 // Function getCongoData()
@@ -796,21 +796,21 @@ SELECT
         badgeid = "$badgeid";
 EOD;
     if ($result = mysqli_query_with_error_handling($query)) {
-        return (FALSE);
+        return false;
     };
     $rows = mysqli_num_rows($result);
     if ($rows != 1) {
         $message_error = "$rows rows returned for badgeid: $badgeid when 1 expected. $message_error";
-        return (FALSE);
+        return false;
     };
     if (!$participant_array = retrieveParticipant($badgeid)) {
-        return (FALSE);
+        return false;
     };
     $participant_array["chpw"] = ($participant_array["password"] == "4cb9c8a8048fd02294477fcb1a41191a");
     $participant_array["password"] = "";
     $participant_array = array_merge($participant_array, mysqli_fetch_array($result, MYSQLI_ASSOC));
     mysqli_free_result($result);
-    return ($participant_array);
+    return $participant_array;
 }
 
 // Function retrieve_participantAvailability_from_db()
@@ -829,16 +829,16 @@ SELECT
         badgeid = "$badgeid";
 EOD;
     if (!$result = mysqli_query_with_error_handling($query, $exit_on_error)) {
-        return (false);
+        return false;
     }
     $rows = mysqli_num_rows($result);
     if ($rows != 1) {
         $message_error = "Found $rows rows for participant with badgeid:$badgeid.  Expected 1.";
-        log_mysqli_error($query, $message_error, false);
+        $message_error = log_mysqli_error($query, $message_error);
         if ($exit_on_error) {
-            exitWithWrapup(false); // will exit script
+            RenderError($message_error); // will exit script
         }
-        return (false);
+        return false;
     }
     $participantAvailability = mysqli_fetch_array($result, MYSQLI_ASSOC);
     mysqli_free_result($result);
@@ -846,7 +846,7 @@ EOD;
     if (CON_NUM_DAYS > 1) {
         $query = "SELECT badgeid, day, maxprog FROM ParticipantAvailabilityDays where badgeid=\"$badgeid\";";
         if (!$result = mysqli_query_with_error_handling($query, $exit_on_error)) {
-            return (false);
+            return false;
         }
         if (mysqli_num_rows($result) > 0) {
             while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
@@ -868,7 +868,7 @@ SELECT
         starttime;
 EOD;
     if (!$result = mysqli_query_with_error_handling($query, $exit_on_error)) {
-        return (false);
+        return false;
     }
     $i = 1;
     while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
@@ -876,7 +876,7 @@ EOD;
         $participantAvailability["endtimestamp_$i"] = $row["endtime"];
         $i++;
     }
-    return ($participantAvailability);
+    return $participantAvailability;
 }
 
 // Function set_permission_set($badgeid)
@@ -903,12 +903,12 @@ SELECT DISTINCT
              OR (P.phaseid = PH.phaseid AND PH.current = TRUE));
 EOD;
     if (!$result = mysqli_query_with_error_handling($query, true)) {
-        return (false);
+        return false;
     }
     $rows = mysqli_num_rows($result);
     if ($rows == 0) {
         mysqli_free_result($result);
-        return (true);
+        return true;
     };
     for ($i = 0; $i < $rows; $i++) {
         $onerow = mysqli_fetch_array($result, MYSQLI_NUM);
@@ -936,18 +936,18 @@ SELECT DISTINCT
             PA.elementid IS NOT NULL;
 EOD;
     if (!$result = mysqli_query_with_error_handling($query, true)) {
-        return (false);
+        return false;
     }
     $rows = mysqli_num_rows($result);
     if ($rows == 0) {
         mysqli_free_result($result);
-        return (true);
+        return true;
     };
     for ($i = 0; $i < $rows; $i++) {
         $_SESSION['permission_set_specific'][] = mysqli_fetch_array($result, MYSQLI_ASSOC);
     };
     mysqli_free_result($result);
-    return (true);
+    return true;
 }
 
 //function db_error($title,$query,$staff)
@@ -958,7 +958,7 @@ function db_error($title,$query,$staff) {
     $message="Database error.<BR>\n";
     $message.=mysql_error($link)."<BR>\n";
     $message.=$query."<BR>\n";
-    RenderError($title,$message);
+    RenderError($message);
     }
 
 //function get_idlist_from_db($table_name,$id_col_name,$desc_col_name,$desc_col_match);
@@ -971,7 +971,7 @@ function get_idlist_from_db($table_name,$id_col_name,$desc_col_name,$desc_col_ma
     $query.= "$desc_col_name in ($desc_col_match)";
 //    error_log("zambia - get_idlist_from_db: query: $query");
     $result=mysql_query($query,$link);
-    return(mysql_result($result,0));
+    return mysql_result($result,0);
     }
 
 //function unlock_participant($badgeid);
@@ -994,16 +994,16 @@ function unlock_participant($badgeid) {
                     $query.="badgeid='$badgeid'";
                     }
                 else {
-                    return(0); //can't find anything to unlock
+                    return 0; //can't find anything to unlock
                     }
             }
     //error_log("Zambia: unlock_participants: ".$query);
     $result=mysql_query($query,$link);
     if (!$result) {
-            return (-1);
+            return -1;
             }
         else {
-            return (0);
+            return 0;
             }
     }
 

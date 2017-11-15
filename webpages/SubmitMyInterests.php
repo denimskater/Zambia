@@ -7,7 +7,7 @@
     require_once('renderMyInterests.php');
     if (!may_I('my_gen_int_write')) {
         $message="Currently, you do not have write access to this page.\n";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     $rolerows=$_POST["rolerows"];
@@ -34,7 +34,7 @@
             $query.="\",otherroles=\"".mysql_real_escape_string($otherroles,$link)."\"";
             if (!mysql_query($query,$link)) {
                 $message=$query."<BR>Error inserting into database.  Database not updated.";
-                RenderError($title,$message);
+                RenderError($message);
                 exit();
                 }
             }
@@ -48,7 +48,7 @@
             $query.="WHERE badgeid=\"".$badgeid."\"";
             if (!mysql_query($query,$link)) {
                 $message=$query."<BR>Error updating database.  Database not updated.";
-                RenderError($title,$message);
+                RenderError($message);
                 exit();
                 }
             }
@@ -57,7 +57,7 @@
             $query="INSERT INTO ParticipantHasRole set badgeid=\"".$badgeid."\", roleid=".$rolearray[$i]["roleid"]."";
             if (!mysql_query($query,$link)) {
                 $message=$query."<BR>Error inserting into database.  Database not updated.";
-                RenderError($title,$message);
+                RenderError($message);
                 exit();
                 }
             }
@@ -66,7 +66,7 @@
             $query.="roleid=".$rolearray[$i]["roleid"];
             if (!mysql_query($query,$link)) {
                 $message=$query."<BR>Error deleting from database.  Database not updated.";
-                RenderError($title,$message);
+                RenderError($message);
                 exit();
                 }
             }

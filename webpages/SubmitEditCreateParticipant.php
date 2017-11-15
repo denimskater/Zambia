@@ -6,21 +6,21 @@
     if (!isset($_POST['action'])) {
         $title="Edit or Add Participant";
         $message_error="Required parameter 'action' not found.  Can't continue.<BR>\n";
-        RenderError($title,$message_error);
+        RenderError($message_error);
         exit();
         }
     $action=$_POST['action']; // "create" or "edit"
     if (!($action=="edit"||$action=="create")) {
         $title="Edit or Add Participant";
         $message_error="Parameter 'action' contains invalid value.  Can't continue.<BR>\n";
-        RenderError($title,$message_error);
+        RenderError($message_error);
         exit();
         }
     if ($action=="create") { 
             $title="Add Participant";
             if (!may_I('create_participant')) {
                 $message_error="You do not have permission to access this page.<BR>\n";
-                RenderError($title,$message_error);
+                RenderError($message_error);
                 exit();
                 }
             }
@@ -28,7 +28,7 @@
             $title="Add Participant";
             if (!may_I('edit_participant')) {
                 $message_error="You do not have permission to access this page.<BR>\n";
-                RenderError($title,$message_error);
+                RenderError($message_error);
                 exit();
                 }
             }
@@ -71,13 +71,13 @@
             if (!$result) {
                 $message_error="Unrecoverable error updating database.  Database not updated.<BR>\n";
                 $message_error.=$query;
-                RenderError($title,$message_error);
+                RenderError($message_error);
                 exit();
                 }
             if (mysql_num_rows($result)!=1) {
                 $message_error="Database query returned unexpected number of rows(1 expected).  Database not updated.<BR>\n";
                 $message_error.=$query;
-                RenderError($title,$message_error);
+                RenderError($message_error);
                 exit();
                 }
             $maxbadgeid=mysql_result($result,0);
@@ -104,7 +104,7 @@
             $result=mysql_query("START TRANSACTION;",$link);
             if (mysql_errno($link)!=0) {
                 $message_error="Database error: failed to start transaction.  Database not updated.<BR>\n";
-                RenderError($title,$message_error);
+                RenderError($message_error);
                 exit();
                 }
             $result=mysql_query($query,$link);
@@ -114,7 +114,7 @@
                 $result=mysql_query("ROLLBACK;",$link);
                 if ($errno!=0) {
                     $message_error="Database error: failed to rollback transaction.  Database not updated.<BR>\n";
-                    RenderError($title,$message_error);
+                    RenderError($message_error);
                     exit();
                     }
                 continue;
@@ -122,7 +122,7 @@
             if ($errno!=0) {
                 $message_error="Database error: unknown.  Database not updated.<BR>\n";
                 $message_error.=$query;
-                RenderError($title,$message_error);
+                RenderError($message_error);
                 exit();
                 }
             $result=mysql_query($query2,$link);
@@ -132,7 +132,7 @@
                 $result=mysql_query("ROLLBACK;",$link);
                 if (mysql_errno($link)!=0) {
                     $message_error="Database error: failed to rollback transaction.  Database not updated.<BR>\n";
-                    RenderError($title,$message_error);
+                    RenderError($message_error);
                     exit();
                     }
                 continue;
@@ -140,21 +140,21 @@
             if ($errno!=0) {
                 $message_error="Database errorx: unknown.  Database not updated.<BR>\n";
                 $message_error.=$query2;
-                RenderError($title,$message_error);
+                RenderError($message_error);
                 exit();
                 }
             $result=mysql_query("COMMIT;",$link);
             $errno=mysql_errno($link);
             if ($errno!=0) {
                 $message_error="Database error: failed to commit transaction.  Database not updated.<BR>\n";
-                RenderError($title,$message_error);
+                RenderError($message_error);
                 exit();
                 }
             break;
             }
         if ($errno!=0) { // ran through loop but never succeeded
             $message_error="Database error: Tried several times, but had repeated key problems.  Database not updated.<BR>\n";
-            RenderError($title,$message_error);
+            RenderError($message_error);
             exit();
             }
         // insert was successful.  Prepare to do another one.

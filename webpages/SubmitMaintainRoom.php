@@ -44,7 +44,7 @@ EOD;
 	if (!$result=mysql_query($query,$link))
 		{
 			$message=$query."<br />\nError querying database.<br />\n";
-			RenderError($title,$message);
+			RenderError($message);
 			exit();
 		}
 	while (list($sessionid,$durationmin,$title)=mysql_fetch_array($result,MYSQL_NUM))
@@ -65,7 +65,7 @@ EOD;
 	if (!$result=mysql_query($query,$link))
 		{
 		$message=$query."<br />\nError querying database.<br />\n";
-		RenderError($title,$message);
+		RenderError($message);
 		exit();
 		}
 	while (list($sessionid, $badgeid)=mysql_fetch_array($result,MYSQL_NUM))
@@ -88,7 +88,7 @@ EOD;
 	if (!$result=mysql_query($query,$link))
 		{
 		$message=$query."<br />\nError querying database.<br />\n";
-		RenderError($title,$message);
+		RenderError($message);
 		exit();
 		}
 	while ($x=mysql_fetch_array($result,MYSQL_ASSOC))
@@ -110,7 +110,7 @@ EOD;
 	if (!$result=mysql_query($query,$link))
 		{
 		$message=$query."<br />\nError querying database.<br />\n";
-		RenderError($title,$message);
+		RenderError($message);
 		exit();
 		}
 	$oldbadgeid="";
@@ -157,7 +157,7 @@ EOD;
 	if (!$result=mysql_query($query,$link))
 		{
 		$message=$query."<br />\nError querying database.<br />\n";
-		RenderError($title,$message);
+		RenderError($message);
 		exit();
 		}
 	while ($x=mysql_fetch_array($result,MYSQL_ASSOC))

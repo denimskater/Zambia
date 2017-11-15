@@ -26,7 +26,7 @@ SELECT R.roomid, R.roomname FROM Rooms R WHERE R.roomid IN ($roomsToDisplayList)
 	ORDER BY R.display_order
 EOD;
     if (($resultXML = mysql_query_XML($queryArray)) === false) {
-        RenderError($title, $message_error);
+        RenderError($message_error);
         exit();
     }
     $xmlstr = <<<EOD

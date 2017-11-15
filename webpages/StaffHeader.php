@@ -61,7 +61,7 @@ load_javascript($title);
   	require_once('db_functions.php');
     	$queryArray["categories"] = "SELECT reportcategoryid, description FROM ReportCategories ORDER BY display_order;";
     	if (($resultXML=mysql_query_XML($queryArray))===false) {
-    	    RenderError($title,$message_error);
+    	    RenderError($message_error);
             exit();
       }
   ?>

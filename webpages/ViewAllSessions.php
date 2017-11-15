@@ -8,7 +8,7 @@
     $title="Query Session Results";
     if (prepare_db()===false) {
         $message="Error connecting to database.";
-        RenderError($title,$message);
+        RenderError($message);
         exit ();
         }
    $query = <<<EOD
@@ -26,7 +26,7 @@ SELECT
 EOD;
     if (($result=mysql_query($query,$link))===false) {
         $message="Error retrieving data from database.";
-        RenderError($title,$message);
+        RenderError($message);
         exit ();
         }
     RenderViewSessions();

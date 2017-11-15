@@ -8,6 +8,6 @@
         exit();
         }
     $message_error=$message2."<BR>Error retrieving data from DB.  No further execution possible.";
-    RenderError($title,$message_error);
+    RenderError($message_error);
     exit();
 ?>

@@ -25,7 +25,7 @@ if (empty($_POST['navigate']) || $_POST['navigate']!='send') {
 $title = "Staff Send Email";
 $timeLimitSuccess = set_time_limit(600);
 if (!$timeLimitSuccess) {
-	RenderError($title,"Error extending time limit.");
+	RenderError("Error extending time limit.");
 	exit(0);
 }
 $subst_list = array("\$BADGEID\$", "\$FIRSTNAME\$", "\$LASTNAME\$", "\$EMAILADDR\$", "\$PUBNAME\$", "\$BADGENAME\$");

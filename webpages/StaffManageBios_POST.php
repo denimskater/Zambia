@@ -20,7 +20,7 @@ UPDATE Participants
 EOD;
         if (($result=mysql_query($query,$link))===false) {
             $message=$query."<BR>\nError updating database.\n";
-            RenderError($title,$message);
+            RenderError($message);
             exit();
             }
         }
@@ -37,7 +37,7 @@ EOD;
             $c=count($postkeys);
             if ($c<2) {
                 $message="Internal problem parsing post variables.<BR>\n";
-                RenderError($title,$message);
+                RenderError($message);
                 exit();
                 }
             $bioid_list="";
@@ -68,7 +68,7 @@ SELECT IF(P.pubsname!="",P.pubsname,CD.badgename) name, BES.bioeditstatusname, S
 EOD;
     if (($result=mysql_query($query,$link))===false) {
         $message=$query."<BR>\nError retrieving data from database.\n";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     staff_header($title);

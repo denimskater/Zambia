@@ -7,7 +7,7 @@
     require('my_sched_constr_func.php');
     if (!may_I('my_availability')) {
         $message_error = "You do not currently have permission to view this page.<BR>\n";
-        RenderError($title, $message_error);
+        RenderError($message_error);
         exit();
     }
     if (!$partAvail = retrieve_participantAvailability_from_db($badgeid)) {

@@ -8,7 +8,7 @@
     $title="Panel Interests";
     if (!may_I('my_panel_interests')) {
         $message="You do not currently have permission to view this page.<br />\n";
-        RenderError("Permission Error", $message);
+        RenderError($message);
         exit();
         }
     // Get the participant's interest data -- use global $session_interests

@@ -12,7 +12,7 @@ if (!isset($_SESSION['badgeid'])) {
 	// echo "Trying to connect to database.\n";
 	if (prepare_db() === false) {
 		$message_error = "Unable to connect to database.<br />No further execution possible.";
-		RenderError($title, $message_error);
+		RenderError($message_error);
 		exit();
 	}
 	$badgeid = mysqli_real_escape_string($linki, $_POST['badgeid']);
@@ -70,11 +70,11 @@ if (retrieve_participant_from_db($badgeid) === 0) {
 	} else {
 		$message_error="There is a problem with your userid's permission configuration:  It doesn't have ";
 		$message_error.="permission to access any welcome page.  Please contact Zambia staff.";
-		RenderError($title, $message_error);
+		RenderError($message_error);
 	}
 	exit();
 }
 $message_error = $message2."<br />Error retrieving data from DB.  No further execution possible.";
-RenderError($title, $message_error);
+RenderError($message_error);
 exit();
 ?>

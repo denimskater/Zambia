@@ -25,7 +25,7 @@ if (!$result=mysql_query($query,$link)) {
     $message.="Zambia: AutoSendQueuedMail: ".$query." Error querying database.\n";
     //error_log($message);
 	fwrite($logFile,"    ".$query." Error querying database.\n");
-    //RenderError($title,$message);
+    //RenderError($message);
 	fclose($logFile);
     exit();
     }

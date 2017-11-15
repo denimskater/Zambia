@@ -35,7 +35,7 @@
         $query .= "numkidsfasttrack=" . $partAvail["numkidsfasttrack"];
         if (!mysql_query($query, $link)) {
             $message = $query . "<br />Error updating database.  Database not updated.";
-            RenderError($title, $message);
+            RenderError($message);
             exit();
         }
         for ($i = 1; $i <= AVAILABILITY_ROWS; $i++) {
@@ -69,7 +69,7 @@
                 $query .= "badgeid=\"$badgeid\",availabilitynum=$i,starttime=\"$starttime\",endtime=\"$endtime\"";
                 if (!mysql_query($query, $link)) {
                     $message = $query . "<br />Error updating database.  Database not updated.";
-                    RenderError($title, $message);
+                    RenderError($message);
                     exit();
                 }
             }
@@ -83,7 +83,7 @@
             $query = substr($query, 0, -1); // remove extra trailing comma
             if (!mysql_query($query, $link)) {
                 $message = $query . "<br />Error updating database.  Database not updated.";
-                RenderError($title, $message);
+                RenderError($message);
                 exit();
             }
         }
@@ -100,7 +100,7 @@
             $query = substr($query, 0, -2) . ")";
             if (!mysql_query($query, $link)) {
                 $message = $query . "<br />Error updating database.  Database not updated.";
-                RenderError($title, $message);
+                RenderError($message);
                 exit();
             }
         }

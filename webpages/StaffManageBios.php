@@ -18,7 +18,7 @@ EOD;
 // Participants.interested: 1=yes; 2=no; 0=left blank; null=never hit 'save'
     if (($result=mysql_query($query,$link))===false) {
         $message=$query."<BR>\nError retrieving data from database.\n";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     staff_header($title);

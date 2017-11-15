@@ -24,7 +24,7 @@
                     }
                 else {
                     $message=$message2."<BR>Failure to re-retrieve data for Participant.";
-                    RenderError($title,$message);
+                    RenderError($message);
                     exit();
                     }
             }
@@ -36,7 +36,7 @@
 	$query.=" WHERE badgeid=\"".$badgeid."\"";                               //"
     if (!mysql_query($query,$link)) {
 		$message=$query."<BR>Error updating database.  Database not updated.";
-		RenderError($title,$message);
+		RenderError($message);
 		exit();
 		}
     $message="Database updated successfully.";
@@ -49,7 +49,7 @@
             }
         else {
             $message=$message2."<BR>Failure to re-retrieve data for Participant.";
-            RenderError($title,$message);
+            RenderError($message);
             exit();
             }
     $result=mysql_query("Select password from Participants where badgeid='".$badgeid."'",$link);

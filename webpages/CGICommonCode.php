@@ -5,7 +5,7 @@
     require_once('php_functions.php');
     if (prepare_db()===false) {
         $message_error="Unable to connect to database.<BR>No further execution possible.";
-        RenderError($title,$message_error);
+        RenderError($message_error);
         exit();
         };
 ?>

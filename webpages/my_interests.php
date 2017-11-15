@@ -10,13 +10,13 @@
     if (!$result) {
         $message2=mysql_error($link);
         $message=$query."<BR>".$message2."<BR>Error querying database. Unable to continue.<BR>";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     $rows=mysql_num_rows($result);
     if ($rows>1) {
         $message=$query."<br>Multiple rows returned from database where one expected. Unable to continue.";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     if ($rows==0) {
@@ -38,7 +38,7 @@
     if (!$result) {
         $message2=mysql_error($link);
         $message=$query."<BR>".message2."<BR>Error querying database. Unable to continue.<BR>";
-        RenderError($title,$message);
+        RenderError($message);
         exit();
         }
     $rolerows=mysql_num_rows($result);

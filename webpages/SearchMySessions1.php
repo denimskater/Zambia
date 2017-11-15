@@ -51,7 +51,7 @@ EOD;
     $queryArray["sessions"].=") ORDER BY T.trackname, S.sessionid;";
 	$queryArray["may_I"] = "select ".(may_I('my_panel_interests') ? "1" : "0"). " AS my_panel_interests;";
 	if (($resultXML=mysql_query_XML($queryArray))===false) {
-	    RenderError($title,$message_error);
+	    RenderError($message_error);
         exit();
         }
 	participant_header($title);
