@@ -1,5 +1,5 @@
 <?php
-// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+// Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 // This page has two completely different entry points from a user flow standpoint:
 //   1) Beginning of send email flow -- start to specify parameters
 //   2) After verify -- 'back' can change parameters -- 'send' fire off email sending code
@@ -15,7 +15,7 @@ if (isset($_POST['sendto'])) { // page has been visited before
 } else { // page hasn't just been visited
     $email = set_email_defaults();
 }
-$message_warning="";
+$message_warning = "";
 if (empty($_POST['navigate']) || $_POST['navigate']!='send') {
     render_send_email($email,$message_warning);
     exit(0);
@@ -37,35 +37,38 @@ $mailer = Swift_Mailer::newInstance($transport);
 //$swift =& new Swift(new Swift_Connection_SMTP(SMTP_ADDRESS)); // Is machine name of SMTP host defined in db_name.php
 //$log =& Swift_LogContainer::getLog();
 //$log->setLogLevel(0); // 0 is minimum logging; 4 is maximum logging
-$query="SELECT emailtoquery FROM EmailTo where emailtoid=".$email['sendto'];
-if (!$result=mysql_query($query,$link)) {
-    db_error($title, $query, $staff=true); // outputs messages regarding db error
-    exit(0);
+$query = "SELECT emailtoquery FROM EmailTo where emailtoid=".$email['sendto'];
+$result = mysqli_query_exit_on_error($query);
+if (!$result) {
+    exit(-1); // Though should have exited already anyway
 }
-$emailto=mysql_fetch_array($result,MYSQL_ASSOC);
-$query=$emailto['emailtoquery'];
-if (!$result=mysql_query($query, $link)) {
-    db_error($title, $query, $staff=true); // outputs messages regarding db error
-    exit(0);
+$emailto = mysqli_fetch_array($result,MYSQLI_ASSOC);
+mysqli_free_result($result);
+$query = $emailto['emailtoquery'];
+$result = mysqli_query_exit_on_error($query);
+if (!$result) {
+    exit(-1); // Though should have exited already anyway
 }
-$i=0;
-while ($recipientinfo[$i]=mysql_fetch_array($result,MYSQL_ASSOC)) {
+$i = 0;
+while ($recipientinfo[$i]=mysqli_fetch_array($result,MYSQLI_ASSOC)) {
     $i++;
 }
-$recipient_count=$i;
-$query="SELECT emailfromaddress FROM EmailFrom where emailfromid = ".$email['sendfrom'];
-if (!$result=mysql_query($query, $link)) {
-    db_error($title, $query, $staff=true); // outputs messages regarding db error
-    exit(0);
+mysqli_free_result($result);
+$recipient_count = $i;
+$query = "SELECT emailfromaddress FROM EmailFrom where emailfromid = {$email['sendfrom']};";
+$result = mysqli_query_exit_on_error($query);
+if (!$result) {
+    exit(-1); // Though should have exited already anyway
 }
-$emailfrom=mysql_result($result,0);
-$x=$email['sendcc'];
-$query="SELECT emailaddress FROM EmailCC where emailccid=$x";
-if (!$result=mysql_query($query,$link)) {
-    db_error($title, $query, $staff = true); // outputs messages regarding db error
-    exit(0);
+$emailfrom = mysqli_result($result, 0);
+mysqli_free_result($result);
+$query="SELECT emailaddress FROM EmailCC where emailccid = {$email['sendcc']};";
+$result = mysqli_query_exit_on_error($query);
+if (!$result) {
+    exit(-1); // Though should have exited already anyway
 }
-$emailcc=mysql_result($result,0);
+$emailcc = mysqli_result($result,0);
+mysqli_free_result($result);
 $status = checkForShowSchedule($email['body']); // "0" don't show schedule; "1" show events schedule; "2" show full schedule; "3" error condition
 if ($status === "1" || $status === "2") {
     $scheduleInfoArray = generateSchedules($status, $recipientinfo);

@@ -950,29 +950,17 @@ EOD;
     return true;
 }
 
-//function db_error($title,$query,$staff)
-//Populates a bunch of messages to help diagnose a db error
-
-function db_error($title,$query,$staff) {
-    global $link;
-    $message="Database error.<BR>\n";
-    $message.=mysql_error($link)."<BR>\n";
-    $message.=$query."<BR>\n";
-    RenderError($message);
-    }
-
-//function get_idlist_from_db($table_name,$id_col_name,$desc_col_name,$desc_col_match);
+//function get_idlist_from_db($table_name, $id_col_name, $desc_col_name, $desc_col_match);
 // Returns a string with a list of id's from a configuration table
 
-function get_idlist_from_db($table_name,$id_col_name,$desc_col_name,$desc_col_match) {
-    global $link;
-//    error_log("zambia - get_idlist_from_db: desc_col_match: $desc_col_match");
+function get_idlist_from_db($table_name, $id_col_name, $desc_col_name, $desc_col_match) {
     $query = "SELECT GROUP_CONCAT($id_col_name) from $table_name where ";
     $query.= "$desc_col_name in ($desc_col_match)";
-//    error_log("zambia - get_idlist_from_db: query: $query");
-    $result=mysql_query($query,$link);
-    return mysql_result($result,0);
-    }
+    $result = mysqli_query_with_error_handling($query);
+    $retval = mysqli_result($result, 0);
+    mysqli_free_result($result);
+    return $retval;
+}
 
 //function unlock_participant($badgeid);
 //Removes all locks from participant table for participant in parameter

@@ -1,5 +1,5 @@
 <?php
-// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+// Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 // Not sure if there is any need to support post/been here before
 require_once('email_functions.php');
 require_once('db_functions.php');
@@ -19,21 +19,23 @@ if (!validate_email($email)) {
     render_send_email($email, $message); // $message came from validate_email
     exit(0);
 }
-$query = "SELECT emailtoquery FROM EmailTo WHERE emailtoid=" . $email['sendto'];
-if (!$result = mysql_query($query, $link)) {
-    db_error($title, $query, $staff = true); // outputs messages regarding db error
-    exit(0);
+$query = "SELECT emailtoquery FROM EmailTo WHERE emailtoid = {$email['sendto']};";
+$result = mysqli_query_exit_on_error($query);
+if (!$result) {
+    exit(-1); // Though should have exited already anyway
 }
-$emailto = mysql_fetch_array($result, MYSQL_ASSOC);
+$emailto = mysqli_fetch_array($result, MYSQLI_ASSOC);
+mysqli_free_result($result);
 $query = $emailto['emailtoquery'];
-if (!$result = mysql_query($query, $link)) {
-    db_error($title, $query, $staff = true); // outputs messages regarding db error
-    exit(0);
+$result = mysqli_query_exit_on_error($query);
+if (!$result) {
+    exit(-1); // Though should have exited already anyway
 }
 $i = 0;
-while ($recipientinfo[$i] = mysql_fetch_array($result, MYSQL_ASSOC)) {
+while ($recipientinfo[$i] = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
     $i++;
 }
+mysqli_free_result($result);
 $recipient_count = $i;
 $emailverify = array();
 $emailverify['recipient_list'] = "";
@@ -42,11 +44,12 @@ for ($i = 0; $i < $recipient_count; $i++) {
     $emailverify['recipient_list'] .= htmlspecialchars($recipientinfo[$i]['email'], ENT_NOQUOTES) . "\n";
 }
 $query = "SELECT emailfromaddress FROM EmailFrom WHERE emailfromid=" . $email['sendfrom'];
-if (!$result = mysql_query($query, $link)) {
-    db_error($title, $query, $staff = true); // outputs messages regarding db error
-    exit(0);
+$result = mysqli_query_exit_on_error($query);
+if (!$result) {
+    exit(-1); // Though should have exited already anyway
 }
-$emailverify['emailfrom'] = mysql_result($result, 0);
+$emailverify['emailfrom'] = mysqli_result($result, 0);
+mysqli_free_result($result);
 $repl_list = array($recipientinfo[0]['badgeid'], $recipientinfo[0]['firstname'], $recipientinfo[0]['lastname']);
 $repl_list = array_merge($repl_list, array($recipientinfo[0]['email'], $recipientinfo[0]['pubsname'], $recipientinfo[0]['badgename']));
 $status = checkForShowSchedule($email['body']); // "0" don't show schedule; "1" show events schedule; "2" show full schedule; "3" error condition
