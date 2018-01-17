@@ -1,8 +1,9 @@
 <?php
+//	Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 
 function validate_suggestions() {  // just stub for now
     return(true);                 // return true means "passed"
-    }
+}
 
 // Function validate_session_interests($max_si_row)
 // Reads global $sessInts array and performs tests.
@@ -11,24 +12,24 @@ function validate_suggestions() {  // just stub for now
 //
 function validate_session_interests($max_si_row) {
     global $session_interests, $message;
-    $flag=true;
-    $message="";
-    $count=array(0,0,0,0);
-    for ($i=1; $i<=$max_si_row; $i++) {
-        if ($session_interests[$i]['rank']=="" or $session_interests[$i]['delete']) continue;
-        if (filter_var($session_interests[$i]['rank'],FILTER_VALIDATE_INT,array('options' => array('min_range' => 1, 'max_range' => 5)))==false) {
-            $message="Ranks must be integers between 1 and 5.<BR>\n";
-            $flag=false;
+    $flag = true;
+    $message = "";
+    $count = array(0, 0, 0, 0);
+    for ($i = 1; $i <= $max_si_row; $i++) {
+        if ($session_interests[$i]['rank'] == "" or $session_interests[$i]['delete']) continue;
+        if (filter_var($session_interests[$i]['rank'], FILTER_VALIDATE_INT, array('options' => array('min_range' => 1, 'max_range' => 5))) == false) {
+            $message = "Ranks must be integers between 1 and 5.<BR>\n";
+            $flag = false;
             break;
-            }
-        $count[$session_interests[$i]['rank']]++;    
         }
-    if ($count[1]>4 or $count[2]>4 or $count[3]>4 or $count[4]>4) {
-        $message.="You may not use preferences 1-4 more than 4 times each.<BR>\n";
-        $flag=false;
-	    }
-    return ($flag);
+        $count[$session_interests[$i]['rank']]++;
     }
+    if ($count[1] > 4 or $count[2] > 4 or $count[3] > 4 or $count[4] > 4) {
+        $message .= "You may not use preferences 1-4 more than 4 times each.<BR>\n";
+        $flag = false;
+    }
+    return ($flag);
+}
 
 //Function validate_add_session_interest($sessionid,$badgeid,$mode)
 //$mode is ParticipantAddSession or StaffInviteSession
@@ -37,45 +38,45 @@ function validate_session_interests($max_si_row) {
 
 function validate_add_session_interest($sessionid,$badgeid,$mode) {
     global $link, $message, $title;
-    if (!($mode==ParticipantAddSession or $mode==StaffInviteSession)) {
-        $message="Function validate_add_session_interest called with invalid mode.<BR>\n";
+    if (!($mode == ParticipantAddSession or $mode == StaffInviteSession)) {
+        $message = "Function validate_add_session_interest called with invalid mode.<BR>\n";
         return (false);
-        }
-    if (filter_var($sessionid,FILTER_VALIDATE_INT,array('options' => array('min_range' => 1)))==false) {
-        $message="Sessionid not valid.<BR>\n";
-        return (false);
-        }
-    $query= "SELECT S.sessionid FROM";
-    $query.="            Sessions S";
-    $query.="       JOIN Tracks T USING (trackid)";
-    $query.="       JOIN SessionStatuses SS USING (statusid)";
-    $query.="    WHERE";
-    $query.="        T.selfselect=1 and";
-    $query.="        SS.may_be_scheduled=1 and";
-    $query.="        S.invitedguest=0 and";
-    $query.="        S.sessionid=$sessionid";
-    if (!$result=mysql_query($query,$link)) {
-        $message=$query."<BR>\nError querying database.<BR>\n";
-        RenderError($message);
-        exit();
-        }
-    if (mysql_num_rows($result)==0) {
-        $message.="That Session ID is not valid or is not eligible for sign up.<BR>\n";
-        return (false);
-        }
-    $query="SELECT sessionid FROM ParticipantSessionInterest where sessionid=";
-    $query.="$sessionid and badgeid=\"$badgeid\"";
-    if (!$result=mysql_query($query,$link)) {
-        $message=$query."<BR>Error querying database.<BR>\n";
-        RenderError($message);
-        exit();
-        }
-    if (mysql_num_rows($result)!=0) {
-        $message.="You specified a session already on your list.<BR>\n";
-        return (false);
-        }
-    return (true);   
     }
+    if (filter_var($sessionid, FILTER_VALIDATE_INT, array('options' => array('min_range' => 1))) == false) {
+        $message = "Sessionid not valid.<BR>\n";
+        return (false);
+    }
+    $query = "SELECT S.sessionid FROM";
+    $query .= "            Sessions S";
+    $query .= "       JOIN Tracks T USING (trackid)";
+    $query .= "       JOIN SessionStatuses SS USING (statusid)";
+    $query .= "    WHERE";
+    $query .= "        T.selfselect=1 and";
+    $query .= "        SS.may_be_scheduled=1 and";
+    $query .= "        S.invitedguest=0 and";
+    $query .= "        S.sessionid=$sessionid";
+    if (!$result = mysql_query($query, $link)) {
+        $message = $query . "<BR>\nError querying database.<BR>\n";
+        RenderError($message);
+        exit();
+    }
+    if (mysql_num_rows($result) == 0) {
+        $message .= "That Session ID is not valid or is not eligible for sign up.<BR>\n";
+        return (false);
+    }
+    $query = "SELECT sessionid FROM ParticipantSessionInterest WHERE sessionid=";
+    $query .= "$sessionid and badgeid=\"$badgeid\"";
+    if (!$result = mysql_query($query, $link)) {
+        $message = $query . "<BR>Error querying database.<BR>\n";
+        RenderError($message);
+        exit();
+    }
+    if (mysql_num_rows($result) != 0) {
+        $message .= "You specified a session already on your list.<BR>\n";
+        return (false);
+    }
+    return (true);
+}
 
 // Tracy's old version
 
@@ -117,13 +118,14 @@ function validate_name_email($name, $email) {
 // Return true if input is integer within range (inclusive)
 // otherwise false
 //
-function validate_integer($input,$min,$max) {
+function validate_integer($input, $min, $max) {
     return filter_var(
         $input,
         FILTER_VALIDATE_INT,
         array('options' => array('min_range' => $min, 'max_range' => $max))
-        );
-    }
+    );
+}
+
 // Function validate_session()
 // Reads global $session array and performs tests.
 // If a test fails, then the global $message is populated
@@ -131,73 +133,74 @@ function validate_integer($input,$min,$max) {
 //
 function validate_session() {
     // may be incomplete!!
-    global $sstatus, $session, $messages, $debug;
-    $flag=true;
-    get_sstatus();
-    if (!(validate_integer($session['atten'],1,99999) or $session['atten']=="")) { //must require integer atten to be able to write to db
-        $messages.="Estimated attendance must be a positive integer or blank.<BR>\n";
-        $flag=false;
-        }
-    if ($session["track"]==0) {
-        $messages.="Please select a track.<BR>\n";
-        $flag=false;
-        }
-    if ($session['roomset']==0) { 
-        $messages.="Please select a room set.<BR>\n";
-        $flag=false;
-        }
+    global $session, $messages;
+    $flag = true;
+    $sstatus = get_sstatus();
+    if (!(validate_integer($session['atten'], 1, 99999) or $session['atten'] == "")) { //must require integer atten to be able to write to db
+        $messages .= "Estimated attendance must be a positive integer or blank.<br>\n";
+        $flag = false;
+    }
+    if ($session["track"] == 0) {
+        $messages .= "Please select a track.<br>\n";
+        $flag = false;
+    }
+    if ($session['roomset'] == 0) {
+        $messages .= "Please select a room set.<br>\n";
+        $flag = false;
+    }
     if (!($sstatus[$session["status"]]['validate'])) {
 //don't validate further those not marked with 'validate' such as "dropped" or "cancelled"
         return ($flag);
-        }
-    $i=strlen($session["title"]);
-    if ($i<10||$i>48) {
-        $messages.="Title is $i characters long.  Please edit it to between <B>10</B> and <B>48</B> characters.<BR>\n";
-        $flag=false;
-        }
-    $i=strlen($session["progguiddesc"]);
-    if ($i<10||$i>500) {
-        $messages.="Description is $i characters long.  Please edit it to between";
-        $messages.=" <B>10</B> and <B>500</B> characters long.<BR>\n";
-        $flag=false;
-        }
+    }
+    $i = strlen($session["title"]);
+    if ($i < 10 || $i > 48) {
+        $messages .= "Title is $i characters long.  Please edit it to between <b>10</b> and <b>48</b> characters.<br>\n";
+        $flag = false;
+    }
+    $i = strlen($session["progguiddesc"]);
+    if ($i < 10 || $i > 500) {
+        $messages .= "Description is $i characters long.  Please edit it to between";
+        $messages .= " <b>10</b> and <b>500</b> characters long.<br>\n";
+        $flag = false;
+    }
     if (!($sstatus[$session["status"]]['may_be_scheduled'])) {
 //don't validate further those not marked with 'may_be_scheduled'.
-        return($flag);
-        }
-//most stringent validation for those which may be scheduled.
-    if ($session["pubstatusid"]==0) {
-        $messages.="Please select a publication status.<BR>\n";
-        $flag=false;
-        }
-    if ($session["type"]==0 || $session["type"]==99) { // don't allow "I do not know"
-        $messages.="Please select a type.<BR>\n";
-        $flag=false;
-        }
-    if ($session["divisionid"]==0 || $session["divisionid"]==6) { // don't allow "Unspecified"
-        $messages.="Please select a division.<BR>\n";
-        $flag=false;
-        }
-    if ($session["kids"]==0) {
-        $messages.="Please select a kid category.<BR>\n";
-        $flag=false;
-        }
-    if ($session["roomset"]==0 || $session["roomset"]==99) { // don't allow "Unspecified"
-        $messages.="Please select a room set.<BR>\n";
-        $flag=false;
-        }
-    if ($session["track"]==0 || $session["track"]==99) { // don't allow "Unspecified"
-        $messages.="Please select a track.<BR>\n";
-        $flag=false;
-        }
-    return ($flag);
+        return ($flag);
     }
+//most stringent validation for those which may be scheduled.
+    if ($session["pubstatusid"] == 0) {
+        $messages .= "Please select a publication status.<br>\n";
+        $flag = false;
+    }
+    if ($session["type"] == 0 || $session["type"] == 99) { // don't allow "I do not know"
+        $messages .= "Please select a type.<br>\n";
+        $flag = false;
+    }
+    if ($session["divisionid"] == 0 || $session["divisionid"] == 6) { // don't allow "Unspecified"
+        $messages .= "Please select a division.<br>\n";
+        $flag = false;
+    }
+    if ($session["kids"] == 0) {
+        $messages .= "Please select a kid category.<br>\n";
+        $flag = false;
+    }
+    if ($session["roomset"] == 0 || $session["roomset"] == 99) { // don't allow "Unspecified"
+        $messages .= "Please select a room set.<br>\n";
+        $flag = false;
+    }
+    if ($session["track"] == 0 || $session["track"] == 99) { // don't allow "Unspecified"
+        $messages .= "Please select a track.<br>\n";
+        $flag = false;
+    }
+    return ($flag);
+}
+
 // Function validate_participant_availability()
 // Reads global $partAvail and performs tests.
 // If a test fails, then the global $message is populated
 // with the HTML of an error message.
 // This validation code assumes the times in Times table for start and end are
-// strictly monoticially increasing with the index--start and end are part of same
+// strictly monotonically increasing with the index--start and end are part of same
 // monotonic sequence.
 //
 function validate_participant_availability() {

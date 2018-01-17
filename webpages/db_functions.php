@@ -1,5 +1,5 @@
 <?php
-// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+// Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 
 function mysql_query_XML($query_array) {
 	global $linki, $message_error;
@@ -182,7 +182,6 @@ function prepare_db() {
         return false;
     return mysqli_set_charset($linki, "utf8");
 }
-
 
 // The table SessionEditHistory has a timestamp column which is automatically set to the
 // current timestamp by MySQL. 
@@ -962,51 +961,19 @@ function get_idlist_from_db($table_name, $id_col_name, $desc_col_name, $desc_col
     return $retval;
 }
 
-//function unlock_participant($badgeid);
-//Removes all locks from participant table for participant in parameter
-//and all locks held by the user known from the session
-//call with $badgeid='' to unlock based on user only
-
-// PBO 1/23/2017 Currently no biolockedby field in Participants table, so don't use this function.
-function unlock_participant($badgeid) {
-    global $query,$link;
-    $query='UPDATE Participants SET biolockedby=NULL WHERE ';
-    if (isset($_SESSION['badgeid'])) {
-            $query.="biolockedby='".$_SESSION['badgeid']."'";
-            if ($badgeid!='') {
-                $query.=" or badgeid='$badgeid'";
-                }
-            }
-        else {
-            if ($badgeid!='') {
-                    $query.="badgeid='$badgeid'";
-                    }
-                else {
-                    return 0; //can't find anything to unlock
-                    }
-            }
-    //error_log("Zambia: unlock_participants: ".$query);
-    $result=mysql_query($query,$link);
-    if (!$result) {
-            return -1;
-            }
-        else {
-            return 0;
-            }
-    }
-
 // Function get_sstatus()
 // Populates the global sstatus array from the database
 
 function get_sstatus() {
-    global $link, $sstatus;
-    $query = "SELECT statusid, may_be_scheduled, validate from SessionStatuses";
-    $result=mysqli_query($query,$link);
-    while ($arow = mysql_fetch_array($result, MYSQL_ASSOC)) {
-        $statusid=$arow['statusid'];
-        $may_be_scheduled=($arow['may_be_scheduled']==1?1:0);
-        $validate=($arow['validate']==1?1:0);
-        $sstatus[$statusid]=array('may_be_scheduled'=>$may_be_scheduled, 'validate'=>$validate);
-        }
+    $sstatus = array();
+    $query = "SELECT statusid, may_be_scheduled, validate FROM SessionStatuses;";
+    $result = mysqli_query_exit_on_error($query);
+    while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+        $statusid = $row['statusid'];
+        $may_be_scheduled = $row['may_be_scheduled'] == 1;
+        $validate = $row['validate'] == 1;
+        $sstatus[$statusid] = array('may_be_scheduled' => $may_be_scheduled, 'validate' => $validate);
     }
+    return $sstatus;
+}
 ?>
