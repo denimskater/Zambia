@@ -178,7 +178,7 @@ SELECT
         SCH.starttime;
 EOD;
 if (!$result = mysqli_query_exit_on_error($query)) {
-    exit(); // should have existed already
+    exit(); // should have exited already
 }
 $i = 1;
 while ($bigarray[$i] = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
