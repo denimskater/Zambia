@@ -3,6 +3,8 @@
 require_once('db_functions.php');
 require_once('StaffCommonCode.php'); //reset connection to db and check if logged in
 $ConStartDatim = CON_START_DATIM; // make it a variable so it can be substituted
+global $title;
+$title = "Pocket Program CSV Report";
 $query = "SET group_concat_max_len=25000";
 if (!$result = mysqli_query_exit_on_error($query)) {
     exit(); // should have exited already
@@ -51,7 +53,6 @@ if (!$result = mysqli_query_exit_on_error($query)) {
 if (mysqli_num_rows($result) == 0) {
     require_once('StaffHeader.php');
     require_once('StaffFooter.php');
-    $title = "Pocket Program CSV Report";
     staff_header($title);
     $message = "Report returned no records.";
     echo "<P>" . $message . "\n";
