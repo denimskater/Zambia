@@ -761,7 +761,7 @@ SELECT
     WHERE
         badgeid="$badgeid";
 EOD;
-    if ($result = mysqli_query_with_error_handling($query)) {
+    if (!$result = mysqli_query_with_error_handling($query)) {
         return false;
     }
     $rows = mysqli_num_rows($result);

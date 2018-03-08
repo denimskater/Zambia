@@ -1,8 +1,18 @@
 <?php
 //	Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 
-function validate_suggestions() {  // just stub for now
-    return(true);                 // return true means "passed"
+function validate_suggestions($paneltopics, $otherideas, $suggestedguests) {
+    $retval = ""; // return "" means "passed"
+    if (strlen($paneltopics) > 10000) {
+        $retval .= "Please edit your Program Topic Ideas to fewer than 10,000 characters. ";
+    }
+    if (strlen($otherideas) > 10000) {
+        $retval .= "Please edit your Other Programming Ideas to fewer than 10,000 characters. ";
+    }
+    if (strlen($suggestedguests) > 10000) {
+        $retval .= "Please edit your Suggested Guests to fewer than 10,000 characters. ";
+    }
+    return($retval);
 }
 
 // Function validate_session_interests($max_si_row)

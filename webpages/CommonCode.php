@@ -1,12 +1,12 @@
 <?php
-//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
+//	Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 	global $title;
 	require_once('Constants.php');
     require_once('data_functions.php');
     require_once('db_functions.php');
     require_once('render_functions.php');
     require_once('validation_functions.php');
-    require_once('php_functions.php');
+    // require_once('php_functions.php'); For setting session timeout which doesn't seem to work
     //set_session_timeout();
     if (!isset($title)) {
     $title = "";
