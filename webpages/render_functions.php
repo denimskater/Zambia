@@ -1,5 +1,4 @@
 <?php
-//	$Header$
 //	Copyright (c) 2011-2016 The Zambia Group. All rights reserved. See copyright document for more details.
 //	RenderPrecis display requires:  a populated dataarray containing rows with 
 //	$sessionid,$trackname,$typename,$title,$duration,$estatten,$progguiddesc, $persppartinfo IN THAT ORDER

@@ -1,5 +1,4 @@
 <?php
-// $Header$
 function render_session_interests($badgid,$session_interest_count,$message,$message_error, $pageIsDirty) {
     global $session_interests, $title;
     participant_header($title);

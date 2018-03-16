@@ -1,33 +1,33 @@
 <?php
-// Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
-  function RenderSessionReport() {
-    global $result, $title;
-    $title="Session Report";
-    require_once('db_functions.php');
-    require_once('StaffHeader.php');
-    require_once('StaffFooter.php');
+// Copyright (c) 2005-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
+function RenderSessionReport($result) {
+    global $title;
+    $title = "Session Report";
     require_once('StaffCommonCode.php');
     staff_header($title);
-?>
-<p> Here are the results of your search.  The report includes Session id, track, title, duration, estimated attendance, pocket program text, notes for prospective participants.
-<table class="table table-condensed table-hover">
-<?php
-    while (list($sessionid,$trackname,$title,$duration,$estatten,$pocketprogtext, $persppartinfo)= mysql_fetch_array($result, MYSQL_NUM)) {
-        echo "        <TR>\n";
-        echo "            <TD rowspan=3 class=\"border0000\" id=\"sessidtcell\">
-<A HREF=\"EditSession.php?id=".$sessionid."\"><b>".$sessionid."</a>&nbsp;&nbsp;</TD>\n";
+    ?>
+    <p> Here are the results of your search. The report includes Session id, track, title, duration, estimated
+        attendance, pocket program text, notes for prospective participants.
+    <table class="table table-condensed table-hover">
+        <?php
+        while (list($sessionid, $trackname, $title, $duration, $estatten, $pocketprogtext, $persppartinfo) = mysqli_fetch_array($result, MYSQLI_NUM)) {
+            echo "        <tr>\n";
+            echo "            <td rowspan=3 class=\"border0000\" id=\"sessidtcell\">
+<a href=\"EditSession.php?id=" . $sessionid . "\"><b>" . $sessionid . "</a>&nbsp;&nbsp;</td>\n";
 
-        echo "            <TD class=\"border0000\"><b>".$trackname."</TD>\n";
-        echo "            <TD class=\"border0000\"><b>".htmlspecialchars($title,ENT_NOQUOTES)."</TD>\n";
-        echo "            <TD class=\"border0000\"><b>".$duration." hr</TD>\n";
-        echo "            <TD rowspan=3 class=\"border0000\">".$estatten."&nbsp;&nbsp;</TD>\n";
-        echo "            </TR>\n";
-        echo "        <TR><TD colspan=3 class=\"border0010\">".htmlspecialchars($pocketprogtext,ENT_NOQUOTES)."</TD></TR>\n";
-        echo "        <TR><TD colspan=3 class=\"border0000\">".htmlspecialchars($persppartinfo,ENT_NOQUOTES)."</TD></TR>\n";
-        echo "        <TR><TD colspan=5 class=\"border0020\">&nbsp;</TD></TR>\n";
+            echo "            <td class=\"border0000\"><b>" . $trackname . "</td>\n";
+            echo "            <td class=\"border0000\"><b>" . htmlspecialchars($title, ENT_NOQUOTES) . "</td>\n";
+            echo "            <td class=\"border0000\"><b>" . $duration . " hr</td>\n";
+            echo "            <td rowspan=3 class=\"border0000\">" . $estatten . "&nbsp;&nbsp;</td>\n";
+            echo "            </tr>\n";
+            echo "        <tr><td colspan=3 class=\"border0010\">" . htmlspecialchars($pocketprogtext, ENT_NOQUOTES) . "</td></tr>\n";
+            echo "        <tr><td colspan=3 class=\"border0000\">" . htmlspecialchars($persppartinfo, ENT_NOQUOTES) . "</td></tr>\n";
+            echo "        <tr><td colspan=5 class=\"border0020\">&nbsp;</td></tr>\n";
         }
-?>
-        </TABLE>
-<?php
-  staff_footer();    }
+        mysqli_free_result($result);
+        ?>
+    </table>
+    <?php
+    staff_footer();
+}
 ?>

@@ -1,5 +1,5 @@
 <?php
-//	Copyright (c) 2011-2017 The Zambia Group. All rights reserved. See copyright document for more details.
+//	Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 require_once('db_functions.php');
 require_once('data_functions.php');
 require_once('StaffCommonCode.php');
@@ -104,8 +104,7 @@ EOD;
     echo "</table>\n";
 }
 
-function getScheduleTimesArray($roomsToDisplayList)
-{
+function getScheduleTimesArray($roomsToDisplayList) {
     global $message_error, $link, $daymap, $unitsPerBlock, $standardRowHeight;
     $htmlTimesArray = array();
     $nextStartTimeUnits = 0;
@@ -493,7 +492,7 @@ function doACompSlot(&$ScheduledUpTo, $thisSlot, &$thisKey, $i, $roomId) {
 }
 
 function renderComplicatedBlock($roomId) {
-    global $thisSlotLength, $thisSlotBeginUnits, $thisSlotEndUnits, $blockHTML;
+    global $standardRowHeight, $thisSlotLength, $thisSlotBeginUnits, $thisSlotEndUnits, $blockHTML;
     $blockHTML = "<td class=\"schedulerGridRoom schedulerGridSlot\" complicatedBlock=\"true\"";
     if ($thisSlotLength > 1)
         $blockHTML .= " rowspan=\"$thisSlotLength\"";
@@ -516,7 +515,7 @@ function emptySchedBlock($roomId) {
 }
 
 function retrieveSessionInfo() {
-    global $link, $message_error;
+    global $message_error;
     $ConStartDatim = CON_START_DATIM;
     $sessionid = isset($_POST["sessionid"]) ? $_POST["sessionid"] : false;
     $query["sessions"] = <<<EOD
@@ -557,19 +556,20 @@ EOD;
 }
 
 function editSchedule() {
-    global $link, $message, $message_error;
+    global $linki, $message, $message_error;
     //usleep(500000);
     $returnTable = isset($_POST["returnTable"]) ? $_POST["returnTable"] : false;
-    $editsArray = isset($_POST["editsArray"]) ? $_POST["editsArray"] : false;
-    $roomsToDisplayArray = isset($_POST["roomsToDisplayArray"]) ? $_POST["roomsToDisplayArray"] : false;
-    if (!$editsArray)
+    $editsArray = isset($_POST["editsArray"]) ? $_POST["editsArray"] : array();
+    $roomsToDisplayArray = isset($_POST["roomsToDisplayArray"]) ? $_POST["roomsToDisplayArray"] : array();
+    if (count($editsArray) == 0) {
         exit();
+    }
     $name = "";
     $email = "";
     get_name_and_email($name, $email); // populates them from session data or db as necessary
-    $name = mysql_real_escape_string($name, $link);
-    $email = mysql_real_escape_string($email, $link);
-    $badgeid = mysql_real_escape_string($_SESSION['badgeid'], $link);
+    $name = mysqli_real_escape_string($linki, $name);
+    $email = mysqli_real_escape_string($linki, $email);
+    $badgeid = mysqli_real_escape_string($linki, $_SESSION['badgeid']);
     // this is used for the conflict checker only
     $addToScheduleArray = array();
     // this is used for the conflict checker only
@@ -609,7 +609,6 @@ function editSchedule() {
         }
     $deleteScheduleIdList = substr($deleteScheduleIdList, 0, -1); //drop extra trailing comma
     $deleteSessionIdList = substr($deleteSessionIdList, 0, -1); //drop extra trailing comma
-    $SchedInsQuP2 = substr($SchedInsQuP2, 0, -1); //drop extra trailing comma
     $SEHInsQu2 = substr($SEHInsQu2, 0, -1); //drop extra trailing comma
     $noconflicts = check_room_sched_conflicts($deleteScheduleIds, $addToScheduleArray);
     // details of conflicts stored in $message
@@ -617,24 +616,24 @@ function editSchedule() {
 
     if (count($SchedInsQueryArray) > 0) {
         foreach ($SchedInsQueryArray as $thisSessionId => $thisQuery) {
-            $result = mysql_query_with_error_handling($thisQuery, true, true);
-            $SchedInsQueryArray[$thisSessionId] = mysql_insert_id($link);
+            $result = mysqli_query_with_error_handling($thisQuery, true, true);
+            $SchedInsQueryArray[$thisSessionId] = mysqli_insert_id($linki);
         }
         $SessStatSchedQu = substr($SessStatSchedQu, 0, -1) . ");"; //drop extra trailing comma and close quert
-        $result = mysql_query_with_error_handling($SessStatSchedQu, true, true);
+        $result = mysqli_query_with_error_handling($SessStatSchedQu, true, true);
     }
     if ($SEHInsQu2) {
         $SEHInsQu = $SEHInsQu . $SEHInsQu2 . ";";
-        $result = mysql_query_with_error_handling($SEHInsQu, true, true);
+        $result = mysqli_query_with_error_handling($SEHInsQu, true, true);
     }
     if ($deleteScheduleIdList) {
         $deleteQuery = "DELETE FROM Schedule WHERE scheduleid in ($deleteScheduleIdList);";
-        $result = mysql_query_with_error_handling($deleteQuery, true, true);
+        $result = mysqli_query_with_error_handling($deleteQuery, true, true);
     }
     if ($deleteSessionIdList) {
         //  status 2 is "vetted"
         $SessStatVettedQu = "UPDATE Sessions SET statusid = 2 WHERE sessionid IN ($deleteSessionIdList);";
-        $result = mysql_query_with_error_handling($SessStatVettedQu, true, true);
+        $result = mysqli_query_with_error_handling($SessStatVettedQu, true, true);
     }
     if ($returnTable == "true") {
         retrieveRoomsTable();
@@ -649,13 +648,13 @@ function editSchedule() {
 }
 
 function retrieveSessions() {
-    global $link, $message_error;
-    $currSessionIdArray = isset($_POST["currSessionIdArray"]) ? $_POST["currSessionIdArray"] : false;
+    global $linki, $message_error;
+    $currSessionIdArray = isset($_POST["currSessionIdArray"]) ? $_POST["currSessionIdArray"] : array();
     $trackId = intval($_POST["trackId"]);
     $typeId = intval($_POST["typeId"]);
     $divisionId = intval($_POST["divisionId"]);
     $sessionId = intval($_POST["sessionId"]);
-    $title = mysql_real_escape_string(stripslashes($_POST["title"]));
+    $title = mysqli_real_escape_string($linki, stripslashes($_POST["title"]));
     $query["sessions"] = <<<EOD
 SELECT S.sessionid, S.title, S.progguiddesc, TR.trackname, TY.typename, D.divisionname,
 	FLOOR((HOUR(S.duration) * 60 + MINUTE(S.duration) + 29) / 30) AS durationUnits,
@@ -716,8 +715,8 @@ EOD;
 }
 
 function update_participant() {
-    global $message_error;
-    $searchString = mysql_real_escape_string(stripslashes($_POST["searchString"]));
+    global $linki, $message_error;
+    $searchString = mysqli_real_escape_string($linki, stripslashes($_POST["searchString"]));
     if ($searchString == "")
         exit();
     if (is_numeric($searchString)) {

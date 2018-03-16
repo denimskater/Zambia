@@ -1,6 +1,5 @@
 <?php
 // This is an example file.  Please copy to db_name.php and edit as needed.
-// $Header$
 // Created by Peter Olszowka
 // Copyright (c) 2008-2016 Peter Olszowka. All rights reserved.
 // See copyright document for more details.
