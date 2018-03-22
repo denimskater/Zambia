@@ -1,5 +1,5 @@
 <?php
-//	Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
+//	Copyright (c) 2009-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 
 function validate_suggestions($paneltopics, $otherideas, $suggestedguests) {
     $retval = ""; // return "" means "passed"
@@ -28,7 +28,7 @@ function validate_session_interests($max_si_row) {
     for ($i = 1; $i <= $max_si_row; $i++) {
         if ($session_interests[$i]['rank'] == "" or $session_interests[$i]['delete']) continue;
         if (filter_var($session_interests[$i]['rank'], FILTER_VALIDATE_INT, array('options' => array('min_range' => 1, 'max_range' => 5))) == false) {
-            $message = "Ranks must be integers between 1 and 5.<BR>\n";
+            $message = "Ranks must be integers between 1 and 5.<br>\n";
             $flag = false;
             break;
         }
@@ -46,43 +46,50 @@ function validate_session_interests($max_si_row) {
 //First checks that $sessionid is a valid integer which could be a session
 //Then checks db that it is a session which is eligible for participant to sign up.
 
-function validate_add_session_interest($sessionid,$badgeid,$mode) {
-    global $link, $message, $title;
+function validate_add_session_interest($sessionid, $badgeid, $mode) {
+    global $message, $title;
     if (!($mode == ParticipantAddSession or $mode == StaffInviteSession)) {
         $message = "Function validate_add_session_interest called with invalid mode.<BR>\n";
         return (false);
     }
     if (filter_var($sessionid, FILTER_VALIDATE_INT, array('options' => array('min_range' => 1))) == false) {
-        $message = "Sessionid not valid.<BR>\n";
+        $message = "Sessionid not valid.<br>\n";
         return (false);
     }
-    $query = "SELECT S.sessionid FROM";
-    $query .= "            Sessions S";
-    $query .= "       JOIN Tracks T USING (trackid)";
-    $query .= "       JOIN SessionStatuses SS USING (statusid)";
-    $query .= "    WHERE";
-    $query .= "        T.selfselect=1 and";
-    $query .= "        SS.may_be_scheduled=1 and";
-    $query .= "        S.invitedguest=0 and";
-    $query .= "        S.sessionid=$sessionid";
-    if (!$result = mysql_query($query, $link)) {
-        $message = $query . "<BR>\nError querying database.<BR>\n";
-        RenderError($message);
-        exit();
+    $query = <<<EOD
+SELECT
+        S.sessionid
+    FROM
+             Sessions S
+        JOIN Tracks T USING (trackid)
+        JOIN SessionStatuses SS USING (statusid)
+    WHERE
+            T.selfselect=1
+        AND SS.may_be_scheduled=1
+        AND S.invitedguest=0
+        AND S.sessionid=$sessionid;
+EOD;
+    if (!$result = mysqli_query_exit_on_error($query)) {
+        exit(); // Should have exited already
     }
-    if (mysql_num_rows($result) == 0) {
-        $message .= "That Session ID is not valid or is not eligible for sign up.<BR>\n";
+    if (mysqli_num_rows($result) == 0) {
+        $message .= "That Session ID is not valid or is not eligible for sign up.<br>\n";
         return (false);
     }
-    $query = "SELECT sessionid FROM ParticipantSessionInterest WHERE sessionid=";
-    $query .= "$sessionid and badgeid=\"$badgeid\"";
-    if (!$result = mysql_query($query, $link)) {
-        $message = $query . "<BR>Error querying database.<BR>\n";
-        RenderError($message);
-        exit();
+    $query = <<<EOD
+SELECT
+        sessionid
+    FROM
+        ParticipantSessionInterest
+    WHERE
+            sessionid=$sessionid;
+        AND badgeid='$badgeid';
+EOD;
+    if (!$result = mysqli_query_exit_on_error($query)) {
+        exit(); // Should have exited already
     }
-    if (mysql_num_rows($result) != 0) {
-        $message .= "You specified a session already on your list.<BR>\n";
+    if (mysqli_num_rows($result) != 0) {
+        $message .= "You specified a session already on your list.<br>\n";
         return (false);
     }
     return (true);
@@ -215,77 +222,76 @@ function validate_session() {
 //
 function validate_participant_availability() {
     global $partAvail, $messages;
-    $flag=true;
-    $messages="";
-    if (!($partAvail["maxprog"]>=0 and $partAvail["maxprog"]<=PREF_TTL_SESNS_LMT)) {
-        $x=PREF_TTL_SESNS_LMT;
-        $messages="For the overall maximum number of sessions, enter a number between 0 and $x.<BR>\n";
-        $flag=false;
-        }
-    if (CON_NUM_DAYS>1) {
-        for ($i=1; $i<=CON_NUM_DAYS; $i++) {
-            if (!($partAvail["maxprogday$i"]>=0 and $partAvail["maxprogday$i"]<=10)) {
-                $x=PREF_DLY_SESNS_LMT;
-                $messages.="For each daily maximum number of sessions, enter a number between 0 and $x.<BR>\n";
-                $flag=false;
-                break;
-                }
-            }
-        } 
-    if (!($partAvail["numkidsfasttrack"]>=0 and $partAvail["numkidsfasttrack"]<=8)) {
-        $messages.="For the number of kids for fastrack, enter a number between 0 and 8.<BR>\n";
-        $flag=false;
-        }
-    for ($i=1; $i<= AVAILABILITY_ROWS; $i++) {
-        if (CON_NUM_DAYS>1) {
-                // Day fields will be populated
-                $x1=$partAvail["availstartday_$i"];
-                $x2=$partAvail["availstarttime_$i"];
-                $x3=$partAvail["availendday_$i"];
-                $x4=$partAvail["availendtime_$i"];
-                //error_log("zambia: $i, $x1, $x2, $x3, $x4"); //for debugging only
-                if (($x1>0 || $x2>0 || $x3>0 || $x4>0) && ($x1==0 || $x2==0 || $x3==0 || $x4==0 )) {
-                    $messages.="To define an available slot, set all 4 items.  To delete a slot, clear all 4 items.<BR>\n";
-                    $flag=false;
-                    break;
-                    }
-                }
-            else {
-                // Day fields will not be populated.
-                $x2=$partAvail["availstarttime_$i"];
-                $x4=$partAvail["availendtime_$i"];
-                if (($x2>0 || $x4>0) && ($x2==0 || $x4==0)) {
-                    $messages.="To define an available slot, set both items.  To delete a slot, clear both items.<BR>\n";
-                    $flag=false;
-                    break;
-                    }
-                }
-        }
-    for ($i=1; $i<= AVAILABILITY_ROWS; $i++) {
-        if (CON_NUM_DAYS>1) {
-                // Day fields will be populated
-                $x1=$partAvail["availstartday_$i"];
-                $x2=$partAvail["availstarttime_$i"];
-                $x3=$partAvail["availendday_$i"];
-                $x4=$partAvail["availendtime_$i"];
-                if ($x1!=0 && (($x3<$x1) || ($x1==$x3 && $x4<=$x2))) {
-                    $messages.="End time and day must be after start time and day.<BR>\n";
-                    $flag=false;
-                    break;
-                    }
-                }
-            else {
-                // Day fields will not be populated.
-                $x2=$partAvail["availstarttime_$i"];
-                $x4=$partAvail["availendtime_$i"];
-                if (($x4<=$x2) && ($x2!=0)) {
-                    $messages.="End time must be after start time.<BR>\n";
-                    $flag=false;
-                    break;
-                    }
-                }
-
-        }
-    return ($flag);
+    $flag = true;
+    $messages = "";
+    if (!($partAvail["maxprog"] >= 0 and $partAvail["maxprog"] <= PREF_TTL_SESNS_LMT)) {
+        $x = PREF_TTL_SESNS_LMT;
+        $messages = "For the overall maximum number of sessions, enter a number between 0 and $x.<BR>\n";
+        $flag = false;
     }
+    if (CON_NUM_DAYS > 1) {
+        for ($i = 1; $i <= CON_NUM_DAYS; $i++) {
+            if (!($partAvail["maxprogday$i"] >= 0 and $partAvail["maxprogday$i"] <= 10)) {
+                $x = PREF_DLY_SESNS_LMT;
+                $messages .= "For each daily maximum number of sessions, enter a number between 0 and $x.<BR>\n";
+                $flag = false;
+                break;
+            }
+        }
+    }
+    if (!($partAvail["numkidsfasttrack"] >= 0 and $partAvail["numkidsfasttrack"] <= 8)) {
+        $messages .= "For the number of kids for fastrack, enter a number between 0 and 8.<BR>\n";
+        $flag = false;
+    }
+    for ($i = 1; $i <= AVAILABILITY_ROWS; $i++) {
+        if (CON_NUM_DAYS > 1) {
+            // Day fields will be populated
+            $x1 = $partAvail["availstartday_$i"];
+            $x2 = $partAvail["availstarttime_$i"];
+            $x3 = $partAvail["availendday_$i"];
+            $x4 = $partAvail["availendtime_$i"];
+            //error_log("zambia: $i, $x1, $x2, $x3, $x4"); //for debugging only
+            if (($x1 > 0 || $x2 > 0 || $x3 > 0 || $x4 > 0) && ($x1 == 0 || $x2 == 0 || $x3 == 0 || $x4 == 0)) {
+                $messages .= "To define an available slot, set all 4 items.  To delete a slot, clear all 4 items.<BR>\n";
+                $flag = false;
+                break;
+            }
+        } else {
+            // Day fields will not be populated.
+            $x2 = $partAvail["availstarttime_$i"];
+            $x4 = $partAvail["availendtime_$i"];
+            if (($x2 > 0 || $x4 > 0) && ($x2 == 0 || $x4 == 0)) {
+                $messages .= "To define an available slot, set both items.  To delete a slot, clear both items.<BR>\n";
+                $flag = false;
+                break;
+            }
+        }
+    }
+    for ($i = 1; $i <= AVAILABILITY_ROWS; $i++) {
+        if (CON_NUM_DAYS > 1) {
+            // Day fields will be populated
+            $x1 = $partAvail["availstartday_$i"];
+            $x2 = $partAvail["availstarttime_$i"];
+            $x3 = $partAvail["availendday_$i"];
+            $x4 = $partAvail["availendtime_$i"];
+            if ($x1 != 0 && (($x3 < $x1) || ($x1 == $x3 && $x4 <= $x2))) {
+                $messages .= "End time and day must be after start time and day.<BR>\n";
+                $flag = false;
+                break;
+            }
+        } else {
+            // Day fields will not be populated.
+            $x2 = $partAvail["availstarttime_$i"];
+            $x4 = $partAvail["availendtime_$i"];
+            if (($x4 <= $x2) && ($x2 != 0)) {
+                $messages .= "End time must be after start time.<BR>\n";
+                $flag = false;
+                break;
+            }
+        }
+
+    }
+    return ($flag);
+}
+
 ?>

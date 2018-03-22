@@ -135,7 +135,7 @@ function get_nameemail_from_post(&$name, &$email) {
 function get_participant_availability_from_post() {
     $partAvail = array();
     // for numeric fields in ParticipantAvailability--convert to 0 if blank
-    $partAvail["maxprog"] = getInt("maxprog", 0);
+    $partAvail["maxprog"] = getInt("maxprog", "NULL");
     for ($i = 1; $i <= CON_NUM_DAYS; $i++) {
         $partAvail["maxprogday$i"] = getInt("maxprogday$i", 0);
     }
@@ -146,7 +146,7 @@ function get_participant_availability_from_post() {
         $partAvail["availendtime_$i"] = getInt("availendtime_$i", 0);
     }
     $partAvail["preventconflict"] = getString("preventconflict");
-    $partAvail["numkidsfasttrack"] = getInt("numkidsfasttrack", 0);
+    $partAvail["numkidsfasttrack"] = getInt("numkidsfasttrack", "NULL");
     $partAvail["otherconstraints"] = getString("otherconstraints");
     return $partAvail;
 }

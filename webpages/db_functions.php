@@ -170,6 +170,7 @@ if (!include ('../db_name.php'))
 //date_define_timezone_set(TIMEZONE);
 function prepare_db() {
     global $link, $linki;
+    /*
     $link = mysql_connect(DBHOSTNAME,DBUSERID,DBPASSWORD);
     if ($link === false)
 		return false;
@@ -177,6 +178,7 @@ function prepare_db() {
 		return false;
     if (!mysql_set_charset("utf8", $link))
         return false;
+    */
     $linki = mysqli_connect(DBHOSTNAME, DBUSERID, DBPASSWORD, DBDB);
     if ($linki === false)
         return false;
@@ -744,7 +746,7 @@ function isLoggedIn() {
 }
 
 
-// Function retrieve_participant_from_db()
+// Function retrieveParticipant()
 // Reads Participants tables
 // from db and returns array $participant.
 //
@@ -759,7 +761,7 @@ SELECT
     FROM
         Participants
     WHERE
-        badgeid="$badgeid";
+        badgeid='$badgeid';
 EOD;
     if (!$result = mysqli_query_with_error_handling($query)) {
         return false;
@@ -774,12 +776,9 @@ EOD;
     return $participant_array;
 }
 
-// Function getCongoData()
-// Reads CongoDump table
-// from db to populate global array $congoinfo.
-// also calls retrieve_participant_from_db() to populate
-// global array $participant
-//
+// Function retrieveFullParticipant()
+// Reads CongoDump table from db and calls retrieveParticipant()
+// to return combined results
 function retrieveFullParticipant($badgeid) {
     global $message_error;
     if (empty($message_error)) {
@@ -792,9 +791,9 @@ SELECT
     FROM
         CongoDump
     WHERE
-        badgeid = "$badgeid";
+        badgeid = '$badgeid';
 EOD;
-    if ($result = mysqli_query_with_error_handling($query)) {
+    if (!$result = mysqli_query_with_error_handling($query)) {
         return false;
     };
     $rows = mysqli_num_rows($result);

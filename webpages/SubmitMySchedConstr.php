@@ -1,11 +1,11 @@
 <?php
 // Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
-global $linki, $message_error, $messages, $partAvail, $title;
+global $linki, $message_error, $messages, $title;
 $title = "My Availability";
 require('PartCommonCode.php'); // initialize db; check login;
 //                                  set $badgeid from session
 require('my_sched_constr_func.php');
-get_participant_availability_from_post();
+$partAvail = get_participant_availability_from_post();
 $timesXML = retrieve_timesXML();
 $status = validate_participant_availability(); /* return true if OK.  Store error messages in
         global $messages */
@@ -27,45 +27,39 @@ if ($status == false) {
     $message_error = "The data you entered was incorrect.  Database not updated.<br />" . $messages; // error message
     unset($messages);
 } else {  /* Update DB */
-    $query = "REPLACE ParticipantAvailability set ";
-    $query .= "badgeid=\"" . $badgeid . "\", ";
-    $query .= "maxprog=" . $partAvail["maxprog"] . ", ";
+    $query = "REPLACE ParticipantAvailability SET ";
+    $query .= "badgeid='$badgeid', ";
+    $query .= "maxprog={$partAvail["maxprog"]}, ";
     $query .= "preventconflict=\"" . mysqli_real_escape_string($linki, $partAvail["preventconflict"]) . "\", ";
     $query .= "otherconstraints=\"" . mysqli_real_escape_string($linki, $partAvail["otherconstraints"]) . "\", ";
-    $query .= "numkidsfasttrack=" . $partAvail["numkidsfasttrack"];
+    $query .= "numkidsfasttrack={$partAvail["numkidsfasttrack"]};";
     if (!mysqli_query($linki, $query)) {
         $message = $query . "<br />Error updating database.  Database not updated.";
         RenderError($message);
         exit();
     }
     for ($i = 1; $i <= AVAILABILITY_ROWS; $i++) {
-        if ($partAvail["availstarttime_$i"] > 0) {
+        if (isset($partAvail["availstarttime_$i"])) {
             if (CON_NUM_DAYS == 1) {
                 // for 1 day con didn't collect or validate day info; just set day=1
                 $partAvail["availstartday_$i"] = 1;
                 $partAvail["availendday_$i"] = 1;
             }
-
-            //echo($timesXML->saveXML());
             $time = $timesXML["XPath"]->evaluate("string(query/row[@timeid='" . $partAvail["availstarttime_$i"] . "']/@timevalue)");
             $nextday = $timesXML["XPath"]->evaluate("string(query/row[@timeid='" . $partAvail["availstarttime_$i"] . "']/@next_day)");
             $findit = strpos($time, ':');
             $hour = substr($time, 0, $findit);
-            //var_dump($hour);
-            //echo("<br />");
             $restOfTime = substr($time, $findit);
-            //var_dump($restOfTime);
             $starttime = (($partAvail["availstartday_$i"] - 1 + $nextday) * 24 + $hour) . $restOfTime;
 
             $time = $timesXML["XPath"]->evaluate("string(query/row[@timeid='" . $partAvail["availendtime_$i"] . "']/@timevalue)");
             $nextday = $timesXML["XPath"]->evaluate("string(query/row[@timeid='" . $partAvail["availendtime_$i"] . "']/@next_day)");
-            //var_dump($time);
             $findit = strpos($time, ':');
             $hour = substr($time, 0, $findit);
             $restOfTime = substr($time, $findit);
             $endtime = (($partAvail["availendday_$i"] - 1 + $nextday) * 24 + $hour) . $restOfTime;
 
-            $query = "REPLACE ParticipantAvailabilityTimes set ";
+            $query = "REPLACE ParticipantAvailabilityTimes SET ";
             $query .= "badgeid=\"$badgeid\",availabilitynum=$i,starttime=\"$starttime\",endtime=\"$endtime\"";
             if (!mysqli_query($linki, $query)) {
                 $message = $query . "<br />Error updating database.  Database not updated.";
@@ -91,13 +85,14 @@ if ($status == false) {
     $query .= "availabilitynum in (";
     $deleteany = false;
     for ($i = 1; $i <= AVAILABILITY_ROWS; $i++) {
-        if ($partAvail["availstarttime_$i"] == 0) {
+        if (empty($partAvail["availstarttime_$i"])) {
             $query .= $i . ", ";
             $deleteany = true;
         }
     }
     if ($deleteany) {
         $query = substr($query, 0, -2) . ")";
+        error_log($query);
         if (!mysqli_query($linki, $query)) {
             $message = $query . "<br />Error updating database.  Database not updated.";
             RenderError($message);

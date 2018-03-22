@@ -62,11 +62,11 @@ SELECT
 	ORDER BY
 		SCH.roomid, SCH.starttime, endtime DESC;
 EOD;
-    $result = mysql_query_with_error_handling($query);
+    $result = mysqli_query_with_error_handling($query);
     $scheduleArray = array();
     foreach ($roomsToDisplayArray as $roomIndex => $roomId)
         $scheduleArray[$roomId] = array();
-    while ($row = mysql_fetch_assoc($result)) {
+    while ($row = mysqli_fetch_assoc($result)) {
         list($startTimeHour, $startTimeMin, $foo) = sscanf($row["starttime"], "%d:%d:%d");
         list($endTimeHour, $endTimeMin, $foo) = sscanf($row["endtime"], "%d:%d:%d");
         $scheduleArray[$row["roomid"]][] = array(
@@ -133,7 +133,7 @@ function getScheduleTimesArray($roomsToDisplayList) {
             $htmlTimesArray[] = array("hr" => 0, "min" => 0, "mode" => -1, "units" => 0, "html" => "<th>" . $dayName . "</th>");
 
             $query = "SELECT MIN(SCH.starttime) AS starttime FROM Schedule SCH WHERE roomid IN ($roomsToDisplayList);";
-            $result = mysql_query_with_error_handling($query, true, true);
+            $result = mysqli_query_with_error_handling($query, true, true);
             $scalarResult = mysql_result($result, 0);
             if ($scalarResult === null)
                 $startTimeUnits = $firstDayStartTimeUnits;
@@ -161,7 +161,7 @@ SELECT MAX(ADDTIME(SCH.starttime, S.duration)) AS endtime
 		AND ADDTIME(SCH.starttime, S.duration) < $thisCutoffTimeStr
 		AND SCH.starttime >= $previousCutoffTimeStr;
 EOD;
-            $result = mysql_query_with_error_handling($query);
+            $result = mysqli_query_with_error_handling($query);
             if (!$result) {
                 RenderErrorAjax($message_error);
                 exit();
@@ -188,7 +188,7 @@ SELECT MIN(SCH.starttime) AS starttime
 			SCH.roomid IN ($roomsToDisplayList)
 		AND ADDTIME(SCH.starttime, S.duration) >= $thisCutoffTimeStr;
 EOD;
-                $result = mysql_query_with_error_handling($query, true, true);
+                $result = mysqli_query_with_error_handling($query, true, true);
                 $scalarResult = mysql_result($result, 0);
                 if ($scalarResult === null) {
                     $gap = true;
@@ -217,7 +217,7 @@ SELECT MAX(ADDTIME(SCH.starttime, S.duration)) AS endtime
 	FROM Schedule SCH JOIN Sessions S USING(sessionid)
 	WHERE SCH.roomid IN ($roomsToDisplayList);
 EOD;
-            $result = mysql_query_with_error_handling($query, true, true);
+            $result = mysqli_query_with_error_handling($query, true, true);
             $scalarResult = mysql_result($result, 0);
             if ($scalarResult === null)
                 $endTimeUnits = $lastDayEndTimeUnits + ($day - 1) * 48;

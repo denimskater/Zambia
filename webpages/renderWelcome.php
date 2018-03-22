@@ -1,11 +1,11 @@
 <?php
-//	Copyright (c) 2011-2017 Peter Olszowka. All rights reserved. See copyright document for more details.
-global $message, $message_error, $message2, $congoinfo, $title;
+// Copyright (c) 2008-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
+global $message, $message_error, $message2, $title;
+// $participant is defined on global scope.
 //error_log("Zambia: Reached renderWelcome.php"); 
 $title = "Participant View";
 require_once('PartCommonCode.php');
 participant_header($title);
-$participant = getCongoData($badgeid);
 if ($message_error != "") {
     echo "<P class=\"alert alert-error\">$message_error</P>\n";
 }
@@ -26,8 +26,8 @@ if (may_I('postcon')) { ?>
     
 <div class="row-fluid">
 	<div class="span12">
-		<h3> Please check back often as more options will become available as we get closer to the convention.</h3>
-		<p> Dear <?php echo $congoinfo["firstname"]; echo " "; echo $congoinfo["lastname"]; ?>,</p>
+		<h3>Please check back often as more options will become available as we get closer to the convention.</h3>
+		<p>Dear <?php echo $participant["firstname"]; echo " "; echo $participant["lastname"]; ?>,</p>
 		<p>Welcome to the <?php echo CON_NAME; ?> Programming website.</p>
 		<h4>First, please take a moment to indicate your ability and interest in participating in <?php echo CON_NAME; ?> programming.</h4>
 		<form class="form-horizontal" name="pwform" method=POST action="SubmitWelcome.php">
