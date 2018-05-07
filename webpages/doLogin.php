@@ -10,16 +10,16 @@ if (!isset($_SESSION['badgeid'])) {
     //    require_once ('php_functions.php');
     $title = "Submit Password";
     // echo "Trying to connect to database.\n";
-    if (prepare_db() === false) {
-        $message_error = "Unable to connect to database.<br />No further execution possible.";
-        RenderError($message_error);
-        exit();
-    }
-    $badgeid = mysqli_real_escape_string($linki, $_POST['badgeid']);
-    $password = stripslashes($_POST['passwd']);
+    $badgeid = mysqli_real_escape_string($linki, getString('badgeid'));
+    $password = getString('passwd');
     $query = "Select password from Participants where badgeid='$badgeid';";
     if (!$result = mysqli_query_exit_on_error($query)) {
         exit(); // Should have exited already
+    }
+    if (mysqli_num_rows($result) != 1) {
+        $message = "Incorrect badgeid or password.";
+        require('login.php');
+        exit(0);
     }
     $dbobject = mysqli_fetch_object($result);
     mysqli_free_result($result);
@@ -33,9 +33,11 @@ if (!isset($_SESSION['badgeid'])) {
     if (!$result = mysqli_query_exit_on_error($query)) {
         exit(); // Should have exited already
     }
-    $dbobject = mysqli_fetch_object($result);
-    $badgename = $dbobject->badgename;
-    $_SESSION['badgename'] = $badgename;
+    if (mysqli_num_rows($result) == 1) {
+        $dbobject = mysqli_fetch_object($result);
+        $badgename = $dbobject->badgename;
+        $_SESSION['badgename'] = $badgename;
+    }
     mysqli_free_result($result);
     $pubsname = "";
     $query = "Select pubsname from Participants where badgeid='$badgeid';";
@@ -63,6 +65,8 @@ if ($participant_array = retrieveParticipant($badgeid)) {
     } elseif (may_I('public_login')) {
         require('renderBrainstormWelcome.php');
     } else {
+        $_SESSION['role'] = 'Participant';
+        unset($_SESSION['badgeid']);
         $message_error = "There is a problem with your userid's permission configuration:  It doesn't have ";
         $message_error .= "permission to access any welcome page.  Please contact Zambia staff.";
         RenderError($message_error);

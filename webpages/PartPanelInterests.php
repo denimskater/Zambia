@@ -18,5 +18,5 @@
     $message="";
     $message_error="";
 	$pageIsDirty = False;
-    render_session_interests($badgid, $session_interest_count, $message, $message_error, $pageIsDirty); // includes footer
+    render_session_interests($session_interest_count, $message, $message_error, $pageIsDirty); // includes footer
 ?>

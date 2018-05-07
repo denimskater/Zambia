@@ -48,11 +48,9 @@ EOD;
 if (!$result = mysqli_query_exit_on_error($query)) {
     exit(); // Should have exited already
 }
-$i = 1;
+$i = 0;
 $rolearray = array();
-while ($row = mysqli_fetch_array($result, MYSQLI_NUM)) {
-    $rolearray[$i] = array();
-    list($rolearray[$i]["badgeid"], $rolearray[$i]["roleid"], $rolearray[$i]["rolename"]) = $row;
+while ($rolearray[$i] = mysqli_fetch_assoc($result)) {
     $i++;
 }
 mysqli_free_result($result);

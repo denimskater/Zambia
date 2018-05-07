@@ -17,7 +17,7 @@ if (($x = $_POST['ajax_request_action']) != "update_participant") {
 $may_edit_bio = may_I('EditBio');
 $query = "UPDATE Participants SET ";
 $updateClause = "";
-$query_end = " WHERE badgeid = $badgeid";
+$query_end = " WHERE badgeid = '$badgeid';";
 if (isset($_POST['interested'])) {
     $x = $_POST['interested'];
     if ($x == 1 || $x == 2)
@@ -98,7 +98,7 @@ if (!$updateClause && !$valuesClause2 && !$credentialClause3) {
     exit();
 }
 if ($updateClause) {
-    mysqli_query_with_error_handling($query . mb_substr($updateClause, 0, -2) . $query_end, true, true);
+    mysqli_query_with_error_handling(($query . mb_substr($updateClause, 0, -2) . $query_end), true, true);
 }
 if ($valuesClause2) {
     mysqli_query_with_error_handling($query2 . $valuesClause2, true, true);

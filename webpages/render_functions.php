@@ -39,7 +39,11 @@ function RenderPrecis($result, $showlinks) {
             echo "&nbsp;";
         echo "</td>\n";
         echo "    <td class=\"border0000\" style=\"font-weight:bold\">$statusname</td>\n";
-        echo "    <td class=\"border0000\" style=\"font-weight:bold\"><a href=\"SessionHistory.php?selsess=$sessionid\">History</a></td>\n";
+        if ($showlinks) {
+            echo "    <td class=\"border0000\" style=\"font-weight:bold\"><a href=\"SessionHistory.php?selsess=$sessionid\">History</a></td>\n";
+        } else {
+            echo "<td class=\"border0000\"></td>";
+        }
         echo "</tr>\n";
         echo "<tr><td colspan=\"8\" class=\"border0010\">" . htmlspecialchars($progguiddesc, ENT_NOQUOTES) . "</td></tr>\n";
         if ($persppartinfo) {

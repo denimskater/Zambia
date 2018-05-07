@@ -3,10 +3,8 @@
 // This page has two completely different entry points from a user flow standpoint:
 //   1) Beginning of send email flow -- start to specify parameters
 //   2) After verify -- 'back' can change parameters -- 'send' fire off email sending code
-require_once('email_functions.php');
-require_once('db_functions.php');
-require_once('render_functions.php');
 require_once('StaffCommonCode.php'); //reset connection to db and check if logged in
+require_once('email_functions.php');
 require_once(SWIFT_DIRECTORY."/swift_required.php");
 global $title, $message, $link;
 if (isset($_POST['sendto'])) { // page has been visited before

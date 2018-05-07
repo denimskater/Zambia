@@ -3,7 +3,7 @@
 global $title;
 require_once('db_functions.php');
 require_once('RenderSessionCountReport.php');
-require_once('render_functions.php');
+require_once('error_functions.php');
 $title = "View Session Report";
 if (prepare_db() === false) {
     $message = "Error connecting to database.";

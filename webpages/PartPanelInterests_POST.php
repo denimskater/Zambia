@@ -41,5 +41,5 @@ $session_interest_count = get_session_interests_from_db($badgeid); // Returns co
 // Get title, etc. of such data -- use global $session_interests
 get_si_session_info_from_db($session_interest_count); // Will render its own errors
 $pageIsDirty = False;
-render_session_interests($badgeid, $session_interest_count, $message, $message_error, $pageIsDirty); // includes footer
+render_session_interests($session_interest_count, $message, $message_error, $pageIsDirty); // includes footer
 ?>

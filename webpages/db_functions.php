@@ -15,7 +15,6 @@ function mysql_query_XML($query_array) {
         }
     }
     $status = mysqli_multi_query($linki, $multiQueryStr);
-    //error_log("1: $status");
     $queryNo = 0;
     $queryNameArr = array_keys($query_array);
     do {
@@ -26,26 +25,28 @@ function mysql_query_XML($query_array) {
             $message_error = $multiQueryStr . "<br />";
             $message_error .= "Error with query number " . ($queryNo + 1) . " <br />";
             $message_error .= mysqli_error($linki) . "<br />";
-            //error_log("2: errored out of mysql_query_XML");
+            error_log($multiQueryStr);
+            error_log("Error with query number " . ($queryNo + 1));
+            error_log(mysqli_error($linki));
             return false;
         }
-        $result = mysqli_store_result($linki);
         $queryNode = $xml -> createElement("query");
         $queryNode = $doc -> appendChild($queryNode);
         $queryNode->setAttribute("queryName", $queryNameArr[$queryNo]);
-        while($row = mysqli_fetch_assoc($result)) {
-            $rowNode = $xml -> createElement("row");
-            $rowNode = $queryNode -> appendChild($rowNode);
-            //error_log("3: \$row: ".print_r($row, true));
-            foreach ($row as $fieldname => $fieldvalue) {
-                if ($fieldvalue !== "" && $fieldvalue !== null) {
-                    $rowNode -> setAttribute($fieldname, $fieldvalue);
+        $result = mysqli_store_result($linki);
+        if ($result !== false) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $rowNode = $xml->createElement("row");
+                $rowNode = $queryNode->appendChild($rowNode);
+                foreach ($row as $fieldname => $fieldvalue) {
+                    if ($fieldvalue !== "" && $fieldvalue !== null) {
+                        $rowNode->setAttribute($fieldname, $fieldvalue);
+                    }
                 }
             }
+            mysqli_free_result($result);
         }
-        mysqli_free_result($result);
         $queryNo++;
-        //error_log("4: increment \$queryNo to $queryNo");
     } while (mysqli_more_results($linki));
 	return $xml;
 }
@@ -167,7 +168,6 @@ function populateCustomTextArray() {
 // Opens database channel
 if (!include ('../db_name.php'))
 	include ('./db_name.php'); // scripts which rely on this file (db_functions.php) may run from a different directory
-//date_define_timezone_set(TIMEZONE);
 function prepare_db() {
     global $link, $linki;
     /*
@@ -182,6 +182,7 @@ function prepare_db() {
     $linki = mysqli_connect(DBHOSTNAME, DBUSERID, DBPASSWORD, DBDB);
     if ($linki === false)
         return false;
+    date_default_timezone_set(PHP_DEFAULT_TIMEZONE);
     return mysqli_set_charset($linki, "utf8");
 }
 
@@ -888,17 +889,13 @@ function set_permission_set($badgeid) {
 SELECT DISTINCT
         permatomtag
     FROM
-        PermissionAtoms PA
-        JOIN Permissions P USING (permatomid),
-        Phases PH,
-        PermissionRoles PR,
-        UserHasPermissionRole UHPR
+                  PermissionAtoms PA
+             JOIN Permissions P USING (permatomid)
+        LEFT JOIN Phases PH ON P.phaseid = PH.phaseid AND PH.current = TRUE
+        LEFT JOIN UserHasPermissionRole UHPR ON P.permroleid = UHPR.permroleid AND UHPR.badgeid='$badgeid'
     WHERE
-            (   (UHPR.badgeid='$badgeid' AND UHPR.permroleid = P.permroleid)
-              OR P.badgeid='$badgeid' )
-        AND
-            (P.phaseid IS NULL
-             OR (P.phaseid = PH.phaseid AND PH.current = TRUE));
+            (PH.phaseid IS NOT NULL OR P.phaseid IS NULL)
+        AND (UHPR.badgeid IS NOT NULL OR P.badgeid='$badgeid');
 EOD;
     if (!$result = mysqli_query_with_error_handling($query, true)) {
         return false;
@@ -914,37 +911,37 @@ EOD;
     };
     mysqli_free_result($result);
 // Second, do <<specific>> permissions
-    $_SESSION['permission_set_specific'] = array();
-    $query = <<<EOD
-SELECT DISTINCT
-        permatomtag, elementid
-    FROM
-        PermissionAtoms PA
-        JOIN Permissions P USING(permatomid),
-        Phases PH,
-        PermissionRoles PR,
-        UserHasPermissionRole UHPR
-    WHERE
-            (   (UHPR.badgeid='$badgeid' AND UHPR.permroleid = P.permroleid)
-              OR P.badgeid='$badgeid' )
-        AND
-            (P.phaseid IS NULL
-            OR (P.phaseid = PH.phaseid AND PH.current = TRUE))
-        AND
-            PA.elementid IS NOT NULL;
-EOD;
-    if (!$result = mysqli_query_with_error_handling($query, true)) {
-        return false;
-    }
-    $rows = mysqli_num_rows($result);
-    if ($rows == 0) {
-        mysqli_free_result($result);
-        return true;
-    };
-    for ($i = 0; $i < $rows; $i++) {
-        $_SESSION['permission_set_specific'][] = mysqli_fetch_array($result, MYSQLI_ASSOC);
-    };
-    mysqli_free_result($result);
+//    $_SESSION['permission_set_specific'] = array();
+//    $query = <<<EOD
+//SELECT DISTINCT
+//        permatomtag, elementid
+//    FROM
+//        PermissionAtoms PA
+//        JOIN Permissions P USING(permatomid),
+//        Phases PH,
+//        PermissionRoles PR,
+//        UserHasPermissionRole UHPR
+//    WHERE
+//            (   (UHPR.badgeid='$badgeid' AND UHPR.permroleid = P.permroleid)
+//              OR P.badgeid='$badgeid' )
+//        AND
+//            (P.phaseid IS NULL
+//            OR (P.phaseid = PH.phaseid AND PH.current = TRUE))
+//        AND
+//            PA.elementid IS NOT NULL;
+//EOD;
+//    if (!$result = mysqli_query_with_error_handling($query, true)) {
+//        return false;
+//    }
+//    $rows = mysqli_num_rows($result);
+//    if ($rows == 0) {
+//        mysqli_free_result($result);
+//        return true;
+//    };
+//    for ($i = 0; $i < $rows; $i++) {
+//        $_SESSION['permission_set_specific'][] = mysqli_fetch_array($result, MYSQLI_ASSOC);
+//    };
+//    mysqli_free_result($result);
     return true;
 }
 
@@ -955,7 +952,7 @@ function get_idlist_from_db($table_name, $id_col_name, $desc_col_name, $desc_col
     $query = "SELECT GROUP_CONCAT($id_col_name) from $table_name where ";
     $query.= "$desc_col_name in ($desc_col_match)";
     $result = mysqli_query_with_error_handling($query);
-    $retval = mysqli_result($result, 0);
+    $retval = mysqli_fetch_row($result)[0];
     mysqli_free_result($result);
     return $retval;
 }

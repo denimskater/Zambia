@@ -2,9 +2,6 @@
 // Copyright (c) 2015-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 global $participant, $message_error, $message2, $congoinfo, $title;
 $title = "Run Report";
-require_once('db_functions.php');
-require_once('StaffHeader.php');
-require_once('StaffFooter.php');
 require_once('StaffCommonCode.php');
 $reporttypeid = getInt("reporttypeid");
 if ($reporttypeid === false) {
@@ -44,7 +41,6 @@ if (($resultXML = mysql_query_XML($queryArray)) === false) {
 }
 staff_header($title);
 echo "<div class=\"alert alert-info\">" . htmlspecialchars($description, ENT_NOQUOTES) . "</div>\n";
-date_default_timezone_set('US/Eastern');
 echo "<p class=\"text-success center\"> Generated: " . date("D M j G:i:s T Y") . "</p>\n";
 //echo(mb_ereg_replace("<(row|query)([^>]*/[ ]*)>", "<\\1\\2></\\1>", $resultXML->saveXML(), "i")); //for debugging only
 $xsl = new DomDocument;

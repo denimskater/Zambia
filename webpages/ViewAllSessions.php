@@ -4,7 +4,6 @@ global $title;
 $title = "Query Session Results";
 require_once('StaffCommonCode.php');
 require_once('RenderViewSessions.php');
-require_once('render_functions.php');
 $_SESSION['return_to_page'] = 'ViewAllSessions.php';
 $query = <<<EOD
 SELECT

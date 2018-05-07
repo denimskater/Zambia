@@ -7,7 +7,7 @@
 // and populates $session_interest_index
 //
 function get_session_interests_from_db($badgeid) {
-    global $linki, $session_interests, $session_interest_index, $title;
+    global $session_interests, $session_interest_index;
     $query = <<<EOD
 SELECT sessionid, rank, willmoderate, comments FROM ParticipantSessionInterest
     WHERE badgeid='$badgeid' ORDER BY IFNULL(rank,9999), sessionid
@@ -48,7 +48,12 @@ SELECT
         S.sessionid,
         T.trackname,
         S.title,
-        S.duration,
+        CASE
+            WHEN (minute(S.duration)=0) THEN date_format(S.duration,'%l hr')
+            WHEN (hour(S.duration)=0) THEN date_format(S.duration, '%i min')
+            ELSE date_format(S.duration,'%l hr, %i min')
+            END
+            as duration,
         S.progguiddesc,
         S.persppartinfo
     FROM

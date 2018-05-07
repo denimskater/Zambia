@@ -71,11 +71,11 @@ function getInt($name, $default = false) {
     } else {
         return $default;
     }
-    if ($default === false) {
-        return (filter_var($int, FILTER_SANITIZE_NUMBER_INT));
+    $t = filter_var($int, FILTER_SANITIZE_NUMBER_INT);
+    if (empty($t)) {
+        return $default;
     } else {
-        $t = filter_var($int, FILTER_SANITIZE_NUMBER_INT);
-        return $t == "" ? $default : $t;
+        return(intval($t));
     }
 }
 
@@ -324,14 +324,6 @@ function fix_slashes($arg) {
         }
     }
     return $arg;
-}
-
-// Function isStaff($badgeid)
-// $badgeid is vestigial
-// returns true if user has staff permissions
-function isStaff($badgeid) {
-//    error_log("Zambia: ".print_r($permission_set,TRUE));
-    return (in_array("Staff", $_SESSION['permission_set']));
 }
 
 // Function may_I($permatomtag)

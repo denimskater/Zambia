@@ -1,10 +1,8 @@
 <?php
 // Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 // Not sure if there is any need to support post/been here before
-require_once('email_functions.php');
-require_once('db_functions.php');
-require_once('render_functions.php');
 require_once('StaffCommonCode.php'); //reset connection to db and check if logged in
+require_once('email_functions.php');
 global $message, $link, $title;
 $subst_list = array('$BADGEID$', '$FIRSTNAME$', "\$LASTNAME\$", "\$EMAILADDR\$", "\$PUBNAME\$", "\$BADGENAME\$");
 $title = "Send Email (Step 2 - verify)";
