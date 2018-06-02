@@ -50,7 +50,7 @@ EOB;
     }
 
     if ($searchtitle != '') {
-        $searchtitle = mysqli_real_escape_string($searchtitle, $linki);
+        $searchtitle = mysqli_real_escape_string($linki, $searchtitle);
         $query .= " AND S.title like \"%$searchtitle%\"";
     }
     return(mysqli_query_exit_on_error($query));

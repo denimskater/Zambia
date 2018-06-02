@@ -85,7 +85,7 @@ SELECT
     FROM
         ParticipantSessionInterest
     WHERE
-            sessionid=$sessionid;
+            sessionid=$sessionid
         AND badgeid='$badgeid';
 EOD;
     if (!$result = mysqli_query_exit_on_error($query)) {
