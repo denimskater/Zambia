@@ -1,5 +1,5 @@
 <?php
-//	Copyright (c) 2011-2018 The Zambia Group. All rights reserved. See copyright document for more details.
+//	Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
 require_once('db_functions.php');
 require_once('StaffCommonCode.php');
 
@@ -33,15 +33,15 @@ EOD;
 
 function update_participant() {
     global $linki, $message_error;
-    $partid = mysqli_real_escape_string($linki, $_POST["badgeid"]);
-    $password = $_POST["password"];
+    $partid = mysqli_real_escape_string($linki, getString("badgeid"));
+    $password = getString("password");
     $biodirty = isset($_POST["bio"]);
-    $bio = stripslashes($_POST["bio"]);
+    $bio = getString("bio");
     $pubsnamedirty = isset($_POST["pname"]);
-    $pubsname = stripslashes($_POST["pname"]);
+    $pubsname = getString("pname");
     $staffnotesdirty = isset($_POST["staffnotes"]);
-    $staffnotes = stripslashes($_POST["staffnotes"]);
-    $interested = $_POST["interested"];
+    $staffnotes = getString("staffnotes");
+    $interested = getInt("interested", "");
     $query = "UPDATE Participants SET ";
     if ($password) {
         $query .= "password=\"" . md5($password) . "\", ";
@@ -82,7 +82,7 @@ EOD;
 
 function perform_search() {
     global $linki, $message_error;
-    $searchString = mysqli_real_escape_string($linki, ($_POST["searchString"]));
+    $searchString = mysqli_real_escape_string($linki, (getString("searchString")));
     if ($searchString == "")
         exit();
     if (is_numeric($searchString)) {
@@ -133,12 +133,10 @@ EOD;
 }
 
 // Start here.  Should be AJAX requests only
-if (!$ajax_request_action = $_POST["ajax_request_action"]) {
-    if (!$ajax_request_action = $_GET["ajax_request_action"]) {
-        exit();
-    }
+$ajax_request_action = getString("ajax_request_action");
+if ($ajax_request_action == "") {
+     exit();
 }
-//error_log("Reached SubmitAdminParticpants. ajax_request_action: $ajax_request_action");
 switch ($ajax_request_action) {
     case "fetch_participant":
         fetch_participant();
