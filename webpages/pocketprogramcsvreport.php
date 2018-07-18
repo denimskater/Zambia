@@ -10,7 +10,6 @@ $query = "SET group_concat_max_len=25000";
 if (!$result = mysqli_query_exit_on_error($query)) {
     exit(); // should have exited already
 }
-mysqli_free_result($result);
 $query = <<<EOD
 SELECT
             S.sessionid, 

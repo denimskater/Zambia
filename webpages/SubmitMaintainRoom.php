@@ -1,6 +1,6 @@
 <?php
-//	Copyright (c) 2011-2018 The Zambia Group. All rights reserved. See copyright document for more details.
-function check_room_sched_conflicts($deleteScheduleIds,$addToScheduleArray) {
+//	Copyright (c) 2011-2018 Peter Olszowka. All rights reserved. See copyright document for more details.
+function check_room_sched_conflicts($deleteScheduleIds, $addToScheduleArray) {
     //
     // $addToScheduleArray is an array of $sessionid => $startmin
     //     sessions to add to schedule with starttime measured in minutes from start of con
@@ -30,7 +30,7 @@ function check_room_sched_conflicts($deleteScheduleIds,$addToScheduleArray) {
     if (count($addToScheduleArray) < 1)
         return (true); // If there are no additions, then
     // there are only deletions and these can't cause conflicts.
-    $sessionidlist = implode(",", $addToScheduleArray);
+    $sessionidlist = implode(",", array_keys($addToScheduleArray));
     $addToScheduleParticipants = array();
     $query = <<<EOD
 SELECT
@@ -40,10 +40,8 @@ SELECT
 	WHERE
 		S.sessionid in ($sessionidlist)
 EOD;
-    if (!$result = mysqli_query($linki, $query)) {
-        $message = $query . "<br />\nError querying database.<br />\n";
-        RenderError($message);
-        exit();
+    if (!$result = mysqli_query_with_error_handling($query, true, true)) {
+        exit(); // should have exited already
     }
     while (list($sessionid, $durationmin, $title) = mysqli_fetch_array($result, MYSQLI_NUM)) {
         $addToScheduleArray2[$sessionid]['startmin'] = $addToScheduleArray[$sessionid];
@@ -60,10 +58,8 @@ SELECT
 	WHERE
 		S.sessionid in ($sessionidlist)
 EOD;
-    if (!$result = mysqli_query($linki, $query)) {
-        $message = $query . "<br />\nError querying database.<br />\n";
-        RenderError($message);
-        exit();
+    if (!$result = mysqli_query_with_error_handling($query, true, true)) {
+        exit(); // should have exited already
     }
     while (list($sessionid, $badgeid) = mysqli_fetch_array($result, MYSQLI_NUM)) {
         $addToScheduleArray2[$sessionid]['participants'][] = $badgeid;
@@ -72,7 +68,7 @@ EOD;
     if (count($addToScheduleParticipants) < 1)
         return (true); // if none of the sessions added to the schedule
     // had any participants, then there can be no participant conflicts.
-    $badgeidlist = implode(",", $addToScheduleParticipants);
+    $badgeidlist = implode(",", array_keys($addToScheduleParticipants));
     mysqli_free_result($result);
     $query = <<<EOD
 SELECT
@@ -82,10 +78,8 @@ SELECT
 	WHERE
 		badgeid in ($badgeidlist)
 EOD;
-    if (!$result = mysqli_query($linki, $query)) {
-        $message = $query . "<br />\nError querying database.<br />\n";
-        RenderError($message);
-        exit();
+    if (!$result = mysqli_query_with_error_handling($query, true, true)) {
+        exit(); // should have exited already
     }
     while ($x = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
         $addToScheduleParticipants[$x['badgeid']] = $x['pubsname'];
@@ -105,10 +99,8 @@ SELECT
 	ORDER BY
 		badgeid, startmin;
 EOD;
-    if (!$result = mysqli_query($linki, $query)) {
-        $message = $query . "<br />\nError querying database.<br />\n";
-        RenderError($message);
-        exit();
+    if (!$result = mysqli_query_with_error_handling($query, true, true)) {
+        exit(); // should have exited already
     }
     $oldbadgeid = "";
     while (list($badgeid, $startmin, $endmin) = mysqli_fetch_array($result, MYSQLI_NUM)) {
@@ -145,20 +137,21 @@ SELECT
 	WHERE
 		POS.badgeid in ($badgeidlist)
 EOD;
-    if (!$result = mysqli_query($linki, $query)) {
-        $message = $query . "<br />\nError querying database.<br />\n";
-        RenderError($message);
-        exit();
+    if (!$result = mysqli_query_with_error_handling($query, true, true)) {
+        exit(); // should have exited already
     }
+    $refScheduleArray = array();
     while ($x = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-        if ($deleteScheduleIds[$x['scheduleid']] == 1)
+        if (!empty($deleteScheduleIds[$x['scheduleid']])) {
             continue; //skip the scheduleids that will be deleted anyway
+        }
         $refScheduleArray[] = $x;
     }
     mysqli_free_result($result);
-    if (!$refScheduleArray)
+    if (count($refScheduleArray) < 1) {
         return (true); //If net of deletes there are no sessions for relevant participants then
-    // there can be no conflicts
+        // there can be no conflicts
+    }
     $message = "";
     foreach ($addToScheduleArray2 as $sessionid => $addSession) {
         $conflictThisAddition = false;
@@ -196,8 +189,8 @@ EOD;
             $addParts = $addSession['participants'];
             foreach ($addParts as $addBadgeid) {
                 $availability_match = false;
-                $partAvailTimeSet = $participantAvailabilityTimes[$addBadgeid];
-                if ($partAvailTimeSet) {
+                if (!empty($participantAvailabilityTimes[$addBadgeid])) {
+                    $partAvailTimeSet = $participantAvailabilityTimes[$addBadgeid];
                     foreach ($partAvailTimeSet as $partAvailTime) {
                         if ($partAvailTime['startmin'] > $addSession['startmin'])
                             continue;

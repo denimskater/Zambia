@@ -46,7 +46,7 @@ $result = mysqli_query_exit_on_error($query);
 if (!$result) {
     exit(-1); // Though should have exited already anyway
 }
-$emailverify['emailfrom'] = mysqli_result($result, 0);
+$emailverify['emailfrom'] = (mysqli_fetch_array($result, MYSQLI_ASSOC)))["emailfromaddress"];
 mysqli_free_result($result);
 $repl_list = array($recipientinfo[0]['badgeid'], $recipientinfo[0]['firstname'], $recipientinfo[0]['lastname']);
 $repl_list = array_merge($repl_list, array($recipientinfo[0]['email'], $recipientinfo[0]['pubsname'], $recipientinfo[0]['badgename']));

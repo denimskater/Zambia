@@ -134,7 +134,8 @@ function getScheduleTimesArray($roomsToDisplayList) {
 
             $query = "SELECT MIN(SCH.starttime) AS starttime FROM Schedule SCH WHERE roomid IN ($roomsToDisplayList);";
             $result = mysqli_query_with_error_handling($query, true, true);
-            $scalarResult = mysql_result($result, 0);
+            $row = mysqli_fetch_assoc($result);
+            $scalarResult = $row["starttime"];
             if ($scalarResult === null)
                 $startTimeUnits = $firstDayStartTimeUnits;
             else {
@@ -166,7 +167,8 @@ EOD;
                 RenderErrorAjax($message_error);
                 exit();
             }
-            $scalarResult = mysql_result($result, 0);
+            $row = mysqli_fetch_assoc($result);
+            $scalarResult = $row["endtime"];
             if ($scalarResult == null) {
                 $foo = 1;
                 $endTimeUnits = $otherDayEndTimeUnits + ($day - 1) * 48;
@@ -189,12 +191,13 @@ SELECT MIN(SCH.starttime) AS starttime
 		AND ADDTIME(SCH.starttime, S.duration) >= $thisCutoffTimeStr;
 EOD;
                 $result = mysqli_query_with_error_handling($query, true, true);
-                $scalarResult = mysql_result($result, 0);
+                $row = mysqli_fetch_assoc($result);
+                $scalarResult = $row["starttime"];
                 if ($scalarResult === null) {
                     $gap = true;
                     $nextStartTimeUnits = $otherDayStartTimeUnits + $day * 48;
                 } else {
-                    list($nextStartTimeHour, $nextStartTimeMin, $foo) = sscanf($scalarResult, "%d:%d");
+                    list($nextStartTimeHour, $nextStartTimeMin) = sscanf($scalarResult, "%d:%d");
                     $nextStartTimeUnits = convertStartTimeToUnits($nextStartTimeHour, $nextStartTimeMin);
                     if ($nextStartTimeHour == null) {
                         $gap = true;
@@ -218,7 +221,8 @@ SELECT MAX(ADDTIME(SCH.starttime, S.duration)) AS endtime
 	WHERE SCH.roomid IN ($roomsToDisplayList);
 EOD;
             $result = mysqli_query_with_error_handling($query, true, true);
-            $scalarResult = mysql_result($result, 0);
+            $row = mysqli_fetch_assoc($result);
+            $scalarResult = $row["endtime"];
             if ($scalarResult === null)
                 $endTimeUnits = $lastDayEndTimeUnits + ($day - 1) * 48;
             else {
