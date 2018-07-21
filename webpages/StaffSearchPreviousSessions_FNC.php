@@ -8,32 +8,32 @@ function SetSessionSearchParameterDefaults() {
     $SessionSearchParameters['type'] = 0;
     $SessionSearchParameters['status'] = 0;
     $SessionSearchParameters['title'] = '';
-    $SessionSearchParameters['showimported'] = FALSE;
+    $SessionSearchParameters['showimported'] = false;
 }
 
 function RenderSearchPreviousSessions() {
     global $SessionSearchParameters, $message_error, $message;
     if ($message_error) {
-        echo "<P class=\"alert alert-error\">$message_error</P>\n";
+        echo "<p class=\"alert alert-error\">$message_error</p>\n";
     } elseif ($message != "") {
-        echo "<P class=\"alert alert-success\">$message</P>\n";
+        echo "<p class=\"alert alert-success\">$message</p>\n";
     }
     ?>
 
-    <FORM method="POST" action="ShowPreviousSessions.php" class="well form-inline">
+    <form method="POST" action="ShowPreviousSessions.php" class="well form-inline">
         <fieldset>
-            <P>Use this page to search for session records from previous cons to import to the current list of
-                sessions.</P>
-            <DIV class="row-fluid">
-                <DIV class="span2">
-                    <LABEL for="currenttrack" class="control-label">Current Track: </LABEL>
-                    <SELECT name="currenttrack" class="xspan2">
-                        <?php populate_select_from_table("Tracks", $SessionSearchParameters['currenttrack'], "Any", TRUE); //$table_name, $default_value, $option_0_text, $default_flag ?>
-                    </SELECT>
-                </DIV>
-                <DIV class="span2">
-                    <LABEL for="previoustrack" class="control-label">Obsolete Track: </LABEL>
-                    <SELECT name="previoustrack" class="xspan2">
+            <p>Use this page to search for session records from previous cons to import to the current list of
+                sessions.</p>
+            <div class="row-fluid">
+                <div class="span2">
+                    <label for="currenttrack" class="control-label">Current Track: </label>
+                    <select name="currenttrack" class="xspan2">
+                        <?php populate_select_from_table("Tracks", $SessionSearchParameters['currenttrack'], "Any", true); //$table_name, $default_value, $option_0_text, $default_flag ?>
+                    </select>
+                </div>
+                <div class="span2">
+                    <label for="previoustrack" class="control-label">Obsolete Track: </label>
+                    <select name="previoustrack" class="xspan2">
                         <?php $query = <<<EOD
 SELECT
         CONCAT(PC.previousconid,"a",PCT.previoustrackid), CONCAT(PC.previousconname,": ",PCT.trackname)
@@ -46,24 +46,24 @@ SELECT
     ORDER BY
         PC.display_order, PCT.previoustrackid
 EOD;
-                        populate_select_from_query($query, $SessionSearchParameters['previouscontrack'], "ANY", TRUE); ?>
-                    </SELECT>
-                </DIV>
-                <div class="span2">
-                    <LABEL class="control-label" for="previouscon">Previous Con: </LABEL>
-                    <SELECT name="previouscon" class="xspan2">
-                        <?php populate_select_from_table("PreviousCons", $SessionSearchParameters['previouscon'], "Any", TRUE); //$table_name, $default_value, $option_0_text, $default_flag ?>
-                    </SELECT>
+                        populate_select_from_query($query, $SessionSearchParameters['previouscontrack'], "ANY", true); ?>
+                    </select>
                 </div>
                 <div class="span2">
-                    <LABEL class="control-label" for="type">Type: </LABEL>
-                    <SELECT name="type" class="xspan2">
-                        <?php populate_select_from_table("Types", $SessionSearchParameters['type'], "Any", TRUE); //$table_name, $default_value, $option_0_text, $default_flag ?>
-                    </SELECT>
+                    <label class="control-label" for="previouscon">Previous Con: </label>
+                    <select name="previouscon" class="xspan2">
+                        <?php populate_select_from_table("PreviousCons", $SessionSearchParameters['previouscon'], "Any", true); //$table_name, $default_value, $option_0_text, $default_flag ?>
+                    </select>
                 </div>
                 <div class="span2">
-                    <LABEL class="control-label" for="status">Status: </LABEL>
-                    <SELECT name="status" class="xspan2">
+                    <label class="control-label" for="type">Type: </label>
+                    <select name="type" class="xspan2">
+                        <?php populate_select_from_table("Types", $SessionSearchParameters['type'], "Any", true); //$table_name, $default_value, $option_0_text, $default_flag ?>
+                    </select>
+                </div>
+                <div class="span2">
+                    <label class="control-label" for="status">Status: </label>
+                    <select name="status" class="xspan2">
                         <?php $query = <<<EOD
 SELECT
         ST.statusid, ST.statusname
@@ -74,83 +74,83 @@ SELECT
     ORDER BY
         ST.display_order
 EOD;
-                        populate_select_from_query($query, $SessionSearchParameters['status'], "ANY", TRUE); ?>
-                    </SELECT>
+                        populate_select_from_query($query, $SessionSearchParameters['status'], "ANY", true); ?>
+                    </select>
                 </div>
             </div>
             <br/>
-            <DIV class="row-fluid">
-                <LABEL class="control-label" for="title">Title: </LABEL>
-                <INPUT type="text" name="title" size="40" value="<?php echo $SessionSearchParameters['title']; ?>">
+            <div class="row-fluid">
+                <label class="control-label" for="title">Title: </label>
+                <input type="text" name="title" size="40" value="<?php echo $SessionSearchParameters['title']; ?>">
                 <span class="help-inline">Enter a word or phrase for which to search. Leave blank for any.</span>
             </div>
             <br/>
-            <DIV class="row-fluid">
+            <div class="row-fluid">
                 <label class="checkbox">
-                    <INPUT type="checkbox"
+                    <input type="checkbox"
                            name="showimported" <?php echo $SessionSearchParameters['showimported'] ? 'checked' : ''; ?>>
                     Include in results sessions which have been imported already.
                 </label>
             </div>
             <br/>
-            <DIV class="row-fluid">
-                <BUTTON type="submit" class="btn btn-primary" value="search">Search</BUTTON>
+            <div class="row-fluid">
+                <button type="submit" class="btn btn-primary" value="search">Search</button>
             </div>
         </fieldset>
-    </FORM>
+    </form>
 <?php } // End of RenderSearchPreviousSessions()
 
 function HandleSearchParameters() {
     // parse parameters for Search of previous sessions and validate them
-    // return TRUE if successful, FALSE otherwise
+    // return true if successful, false otherwise
     global $SessionSearchParameters, $message_error, $message;
     $message_error = "This page is intended to be reached from a form.  One or more required Post parameters were not provided. No further processing is possible.";
     if (isset($_POST['currenttrack'])) {
         $SessionSearchParameters['currenttrack'] = $_POST['currenttrack'];
     } else {
-        Return (FALSE);
+        return (false);
     }
     if (isset($_POST['previoustrack'])) {
         $SessionSearchParameters['previouscontrack'] = $_POST['previoustrack'];
     } else {
-        Return (FALSE);
+        return (false);
     }
     if (isset($_POST['previouscon'])) {
         $SessionSearchParameters['previouscon'] = $_POST['previouscon'];
     } else {
-        Return (FALSE);
+        return (false);
     }
     if (isset($_POST['type'])) {
         $SessionSearchParameters['type'] = $_POST['type'];
     } else {
-        Return (FALSE);
+        return (false);
     }
     if (isset($_POST['status'])) {
         $SessionSearchParameters['status'] = $_POST['status'];
     } else {
-        Return (FALSE);
+        return (false);
     }
     if (isset($_POST['title'])) {
         $SessionSearchParameters['title'] = $_POST['title'];
     } else {
-        Return (FALSE);
+        return (false);
     }
-    $SessionSearchParameters['showimported'] = (isset($_POST['showimported'])) ? TRUE : FALSE;
+    $SessionSearchParameters['showimported'] = (isset($_POST['showimported'])) ? true : false;
     if ($SessionSearchParameters['previouscontrack'] != 0) {
         sscanf($SessionSearchParameters['previouscontrack'], "%da%d", $SessionSearchParameters['previouscon2'],
             $SessionSearchParameters['previoustrack']);
         if ($SessionSearchParameters['previouscon'] != 0 &&
             $SessionSearchParameters['previouscon'] != $SessionSearchParameters['previouscon2']) {
-            $message_error = "<I>Previous Track</I> is not from the con indicated by <I>Previous Con</I> so no results can be returned.";
-            Return (FALSE);
+            $message_error = "<i>Previous Track</i> is not from the con indicated by <i>Previous Con</i> so no results can be returned.";
+            return (false);
         }
     }
-    if ($SessionSearchParameters['previoustrack'] != 0 && $SessionSearchParameters['currenttrack'] != 0) {
-        $message_error = "<I>Previous Track</I> and <I>Current Track</I> are both specified so no results can be returned.";
-        Return (FALSE);
+    if ($SessionSearchParameters['previouscontrack'] != 0 && $SessionSearchParameters['currenttrack'] != 0) {
+        $message_error = "<i>Previous Track</i> and <i>Current Track</i> are both specified so no results can be returned.";
+        return (false);
     }
     $message_error = '';
-    Return (TRUE);
+    return (true);
 } // End of HandleSearchParameters()
 
 function PerformPrevSessionSearch() {
@@ -208,6 +208,7 @@ function PerformPrevSessionSearch() {
 
 function RenderSearchPrevSessionResults() {
     global $result;
+    $result_array = array();
     while ($result_array[] = mysqli_fetch_array($result, MYSQLI_ASSOC)) ;
     array_pop($result_array);
     echo "<div class=\"row-fluid\"><form method=POST action=\"SubmitImportSessions.php\" class=\"form-horizontal\">\n";
@@ -239,7 +240,7 @@ function ProcessImportSessions() {
     if (!isset($_POST['lastrownum'])) {
         $message_error = "This page is intended to be reached from a form.  One or more required ";
         $message_error .= "Post parameters were not provided. No further processing is possible.";
-        Return (FALSE);
+        return (false);
     }
     get_name_and_email($name, $email); // populates them from session data or db as necessary
     $name = mysqli_real_escape_string($linki, $name);
