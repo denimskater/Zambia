@@ -5,7 +5,7 @@
 //   2) After verify -- 'back' can change parameters -- 'send' fire off email sending code
 require_once('StaffCommonCode.php'); //reset connection to db and check if logged in
 require_once('email_functions.php');
-require_once(SWIFT_DIRECTORY."/swift_required.php");
+require_once(AUTOLOAD);
 global $title, $message, $link;
 if (isset($_POST['sendto'])) { // page has been visited before
 // restore previous values to form
@@ -29,12 +29,11 @@ if (!$timeLimitSuccess) {
 $subst_list = array("\$BADGEID\$", "\$FIRSTNAME\$", "\$LASTNAME\$", "\$EMAILADDR\$", "\$PUBNAME\$", "\$BADGENAME\$");
 $email = get_email_from_post();
 //Create the Transport
-$transport = Swift_SmtpTransport::newInstance(SMTP_ADDRESS,2525);
+$transport = (new Swift_SmtpTransport(SMTP_ADDRESS, 2525));
+
 //Create the Mailer using your created Transport
-$mailer = Swift_Mailer::newInstance($transport);
-//$swift =& new Swift(new Swift_Connection_SMTP(SMTP_ADDRESS)); // Is machine name of SMTP host defined in db_name.php
-//$log =& Swift_LogContainer::getLog();
-//$log->setLogLevel(0); // 0 is minimum logging; 4 is maximum logging
+$mailer = new Swift_Mailer($transport);
+
 $query = "SELECT emailtoquery FROM EmailTo where emailtoid=".$email['sendto'];
 $result = mysqli_query_exit_on_error($query);
 if (!$result) {
@@ -58,14 +57,16 @@ $result = mysqli_query_exit_on_error($query);
 if (!$result) {
     exit(-1); // Though should have exited already anyway
 }
-$emailfrom = mysqli_result($result, 0);
+$row = mysqli_fetch_array($result, MYSQLI_ASSOC);
+$emailfrom = $row['emailfromaddress'];
 mysqli_free_result($result);
 $query="SELECT emailaddress FROM EmailCC where emailccid = {$email['sendcc']};";
 $result = mysqli_query_exit_on_error($query);
 if (!$result) {
     exit(-1); // Though should have exited already anyway
 }
-$emailcc = mysqli_result($result,0);
+$row = mysqli_fetch_array($result, MYSQLI_ASSOC);
+$emailcc = $row['emailaddress'];
 mysqli_free_result($result);
 $status = checkForShowSchedule($email['body']); // "0" don't show schedule; "1" show events schedule; "2" show full schedule; "3" error condition
 if ($status === "1" || $status === "2") {
@@ -73,8 +74,9 @@ if ($status === "1" || $status === "2") {
 }
 for ($i=0; $i<$recipient_count; $i++) {
     $ok=TRUE;
-    //Create the message
-    $message = Swift_Message::newInstance();
+    //Create the message and set subject
+    $message = (new Swift_Message($email['subject']));
+
     $repl_list = array($recipientinfo[$i]['badgeid'], $recipientinfo[$i]['firstname'], $recipientinfo[$i]['lastname']);
     $repl_list = array_merge($repl_list, array($recipientinfo[$i]['email'], $recipientinfo[$i]['pubsname'], $recipientinfo[$i]['badgename']));
     $emailverify['body'] = str_replace($subst_list, $repl_list, $email['body']);
@@ -92,10 +94,8 @@ for ($i=0; $i<$recipient_count; $i++) {
         }
         $emailverify['body'] = str_replace($scheduleTag, $scheduleInfo, $emailverify['body']);
     }
-    //Give the message a subject
-    $message->setSubject($email['subject']);
     //Define from address
-	$message->setFrom($emailfrom);
+    $message->setFrom($emailfrom);
     //Define body
     $message->setBody($emailverify['body'],'text/plain');
     //$message =& new Swift_Message($email['subject'],$emailverify['body']);
